@@ -1,3 +1,4 @@
+//Create ต้นแบบ
 'use client';
 
 import { useState } from 'react';
