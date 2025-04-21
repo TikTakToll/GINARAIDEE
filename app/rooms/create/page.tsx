@@ -33,7 +33,7 @@ export default function CreateRoomPage() {
             const newRoom = await createRoom(roomData);
 
             // นำทางไปยังหน้าห้องที่สร้างใหม่
-            router.push(`/rooms/${newRoom.roomCode}/join?ownerUser=${encodeURIComponent(ownerUser)}`);
+            router.push(`/rooms/${newRoom.roomCode}/lobbyjoin?ownerUser=${encodeURIComponent(ownerUser)}`);
         } catch (err) {
             setError('เกิดข้อผิดพลาดในการสร้างห้อง กรุณาลองใหม่อีกครั้ง');
             console.error(err);
@@ -115,13 +115,14 @@ export default function CreateRoomPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md disabled:bg-blue-300"
+                        className="w-full border-2 border-orange-300 bg-red-400 hover:bg-red-200 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
                     >
                         {isLoading ? 'กำลังสร้างห้อง...' : 'สร้างห้อง'}
                     </button>
-                   
+
                 </form>
             </div>
         </div>
     );
 }
+

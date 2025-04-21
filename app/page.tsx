@@ -14,7 +14,6 @@ export default function Home() {
             }}
         >
 
-            {/* ส่วนที่ 2: Content */}
             <main className="flex-grow py-6 px-4 flex items-center justify-center">
                 <div className="w-full max-w-md">
                     <Card className="w-full p-8 border-0 shadow-xl bg-white bg-opacity-90 backdrop-blur-sm rounded-2xl">
@@ -30,7 +29,7 @@ export default function Home() {
                         <div className="space-y-6">
                             <div className="text-center">
                                 <Link href="/rooms/create" className="w-full block">
-                                    <Button className="w-full py-4 text-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-medium cursor-pointer pointer-events-auto">
+                                    <Button className="w-full py-4 text-lg border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-medium cursor-pointer pointer-events-auto">
                                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                         </svg>
@@ -40,7 +39,7 @@ export default function Home() {
                             </div>
 
                             <div className="text-center">
-                                <Link href="/rooms/roomCode" className="w-full block">
+                                <Link href="/rooms/roomCode/join" className="w-full block">
                                     <Button className="w-full py-4 text-lg border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-medium cursor-pointer pointer-events-auto">
                                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />

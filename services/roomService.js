@@ -1,4 +1,5 @@
 // services/roomService.js
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export async function createRoom(roomData) {
@@ -18,19 +19,25 @@ export async function createRoom(roomData) {
 }
 
 export async function joinRoom({ roomCode, memberName }) {
-    const response = await fetch(`${API_BASE_URL}/rooms/join/${roomCode}?memberName=${encodeURIComponent(memberName)}`, {
-        method: 'POST',
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/rooms/join/${roomCode}?memberName=${encodeURIComponent(memberName)}`, {
+            method: 'POST',
+        });
 
-    if (!response.ok) {
-        throw new Error('Room not found');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Failed with status: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error joining room:', error);
+        throw error;
     }
-
-    return response.json();
 }
 
-export async function selectFood(roomCode, member, foodType) {
-    const response = await fetch(`${API_BASE_URL}/rooms/selectFood/${roomCode}?member=${encodeURIComponent(member)}&foodType=${encodeURIComponent(foodType)}`, {
+export async function selectFood(roomCode, memberName, foodType) {
+    const response = await fetch(`${API_BASE_URL}/rooms/selectFood/${roomCode}?memberName=${encodeURIComponent(memberName)}&foodType=${encodeURIComponent(foodType)}`, {
         method: 'POST',
     });
 
@@ -63,4 +70,23 @@ export async function leaveRoom(roomCode, memberName) {
     }
 
     return response.text();
+}
+
+
+    //Update
+
+    export async function getRoomInfo(roomCode) {
+        const response = await fetch(`${API_BASE_URL}/rooms/${roomCode}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get room info');
+        }
+
+        return response.json(); // ได้ Room object มาใช้
+
 }
