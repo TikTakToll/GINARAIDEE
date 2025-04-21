@@ -16,12 +16,12 @@ const Navbar = () => {
 
                             {/* หากมีไฟล์โลโก้จริง ให้ใช้โค้ดด้านล่างแทน */}
                             {/* <Image
-                src="/logo.png"
-                alt="Logo"
-                fill
-                style={{ objectFit: 'contain' }}
-                priority
-              /> */}
+                            src="/logo.png"
+                            alt="Logo"
+                            fill
+                            style={{ objectFit: 'contain' }}
+                            priority
+                            /> */}
                         </div>
                         <div className="text-xl font-bold text-orange-500">GINARAIDEE</div>
                     </Link>
@@ -33,7 +33,7 @@ const Navbar = () => {
                             <Link href="/rooms/create" className="p-4 text-gray-700 hover:text-orange-500 transition px-4">
                                 สร้างห้อง
                             </Link>
-                            <Link href="/rooms/join" className="p-4 text-gray-700 hover:text-orange-500 transition px-4">
+                            <Link href="/rooms/$[roomCode]/join" className="p-4 text-gray-700 hover:text-orange-500 transition px-4">
                                 เข้าร่วมห้อง
                             </Link>
                             <Link href="/rooms/about" className="p-4 text-gray-700 hover:text-orange-500 transition px-4">
