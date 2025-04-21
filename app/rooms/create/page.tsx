@@ -116,7 +116,7 @@ export default function CreateRoomPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full border-2 border-orange-300 bg-red-400 hover:bg-red-200 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
+                        className="w-full border-2 border-orange-300 bg-red-400 hover:bg-orange-50 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
                     >
                         {isLoading ? 'กำลังสร้างห้อง...' : 'สร้างห้อง'}
                     </button>

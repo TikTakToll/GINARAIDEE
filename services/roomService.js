@@ -24,10 +24,13 @@ export async function joinRoom({ roomCode, memberName }) {
             method: 'POST',
         });
 
+        //Announce
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Failed with status: ${response.status}`);
+            const errorData = await response.json().catch(() => null); // ป้องกัน parse error
+            const message = errorData?.message || `Failed with status: ${response.status}`;
+            throw new Error(message); // ✅ แสดงเฉพาะข้อความสำคัญ เช่น "Room is full!"
         }
+
 
         return response.json();
     } catch (error) {
@@ -73,20 +76,32 @@ export async function leaveRoom(roomCode, memberName) {
 }
 
 
+
     //Update
-
-    export async function getRoomInfo(roomCode) {
-        const response = await fetch(`${API_BASE_URL}/rooms/${roomCode}`, {
-            method: 'GET',
-            headers: {
+export async function getRoomInfo(roomCode) {
+    const response = await fetch(`${API_BASE_URL}/rooms/${roomCode}`, {
+        method: 'GET',
+        headers: {
                 'Content-Type': 'application/json',
-            },
-        });
+        },
+    });
 
-        if (!response.ok) {
+    if (!response.ok) {
             throw new Error('Failed to get room info');
-        }
+    }
 
-        return response.json(); // ได้ Room object มาใช้
+    return response.json(); // ได้ Room object มาใช้
+}
 
+    //Kick members
+export async function kickMember(roomCode, ownerUser, memberName) {
+    const response = await fetch(`${API_BASE_URL}/rooms/kick/${roomCode}?ownerUser=${encodeURIComponent(ownerUser)}&memberName=${encodeURIComponent(memberName)}`, {
+        method: 'POST',
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to kick member');
+    }
+
+    return response.text();
 }

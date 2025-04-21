@@ -242,16 +242,16 @@ export default function JoinRoomPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full border-2 border-orange-300 bg-red-400 hover:bg-red-200 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
+                            className="w-full border-2 border-orange-300 bg-red-400 hover:bg-orange-50 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
                         >
                             {isLoading ? 'กำลังเข้าร่วม...' : 'เข้าร่วมห้อง'}
                         </button>
 
                         <button
                             type="button"
-                            onClick={() => router.push(`/rooms/${roomCode}/lobby?memberName=${encodeURIComponent(memberName)}`)}
+                            onClick={() => router.push('/')}
                             disabled={isLoading}
-                            className="w-full border-2 border-orange-300 bg-orange-500 hover:bg-red-200 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
+                            className="w-full border-2 border-orange-300 bg-orange-500 hover:bg-orange-50 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
                         >
                             กลับไปหน้าหลัก
                         </button>

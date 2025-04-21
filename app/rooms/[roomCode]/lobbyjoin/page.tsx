@@ -1,11 +1,10 @@
-//Lobby ต้นแบบ
 'use client';
 
 import { useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getRoomInfo } from '@/services/roomService';
+import { getRoomInfo,kickMember } from '@/services/roomService';
 
-// รับ params แบบ Promise และใช้ use() เพื่อดึงค่าจริง
+
 export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: string }> }) {
     const { roomCode } = use(params);
 
@@ -14,7 +13,10 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     const [members, setMembers] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [owner, setOwner] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [ownerUser, setOwnerUser] = useState<string>('');
+
 
     const categories = ['อาหารไทย', 'อาหารญี่ปุ่น', 'อาหารเกาหลี', 'อาหารจีน', 'อาหารฝรั่ง'];
 
@@ -24,6 +26,8 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                 const data = await getRoomInfo(roomCode);
                 setMembers(data.members || []);
                 setSelectedCategories(data.selectedCategories || []);
+                setOwner(data.owner || null);
+                setOwnerUser(data.ownerUser); // ✅ ดึง owner มาเก็บไว้
             } catch (err) {
                 console.error('Failed to fetch room info:', err);
             } finally {
@@ -40,6 +44,21 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                 ? prev.filter(c => c !== category)
                 : [...prev, category]
         );
+    };
+
+
+    //เตะคน
+    const handleKick = async (member: string) => {
+        if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการเตะ ${member} ออกจากห้อง?`)) return;
+
+        try {
+            await kickMember(roomCode, memberName, member); // memberName = คนที่ login เข้ามา
+            alert(`เตะ ${member} ออกจากห้องเรียบร้อย`);
+            setMembers(prev => prev.filter(m => m !== member)); // อัปเดตทันที
+        } catch (err) {
+            // @ts-ignore
+            alert('เตะสมาชิกไม่สำเร็จ: ' + err.message);
+        }
     };
 
     const handleRandomFood = () => {
@@ -71,9 +90,20 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
                 <div className="text-left">
                     <h2 className="font-semibold mb-2">สมาชิกในห้อง:</h2>
-                    <ul className="list-disc list-inside text-sm text-left">
+                    <ul className="list-disc list-inside text-sm text-left space-y-1">
                         {members.map((member, index) => (
-                            <li key={index}>{member}</li>
+                            <li key={index} className="flex justify-between items-center">
+                                <span>{member}</span>
+
+                                {memberName === ownerUser && member !== ownerUser && (
+                                    <button
+                                        onClick={() => handleKick(member)}
+                                        className="text-red-500 text-xs hover:underline"
+                                    >
+                                        เตะ
+                                    </button>
+                                )}
+                            </li>
                         ))}
                     </ul>
                 </div>
@@ -104,4 +134,3 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
         </div>
     );
 }
-
