@@ -1,13 +1,14 @@
+
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { getRoomInfo,kickMember } from '@/services/roomService';
+import { useRouter,useSearchParams } from 'next/navigation';
+import {getRoomInfo, kickMember, leaveRoom} from '@/services/roomService';
 
 
 export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: string }> }) {
     const { roomCode } = use(params);
-
+    const router = useRouter();
     const searchParams = useSearchParams();
     const memberName = searchParams.get('memberName') || 'ผู้ใช้';
 
@@ -60,6 +61,21 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
             alert('เตะสมาชิกไม่สำเร็จ: ' + err.message);
         }
     };
+
+
+    const handleLeaveRoom = async () => {
+        if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากห้องนี้?')) return;
+
+        try {
+            const response = await leaveRoom(roomCode, memberName!);
+            // @ts-ignore
+            alert('ออกจากห้องเรียบร้อย: ' + response.data);
+            router.push('/');
+        } catch (err: any) {
+            alert('ออกจากห้องไม่สำเร็จ: ' + (err?.response?.data || err.message));
+        }
+    };
+
 
     const handleRandomFood = () => {
         if (selectedCategories.length === 0) {
@@ -129,6 +145,13 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                     className="w-full bg-orange-400 text-white py-2 px-4 rounded hover:bg-orange-500 transition-all"
                 >
                     🎲 สุ่มอาหาร!
+                </button>
+
+                <button
+                    onClick={handleLeaveRoom}
+                    className="w-full bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400 transition-all"
+                >
+                    🚪 ออกจากห้อง
                 </button>
             </div>
         </div>

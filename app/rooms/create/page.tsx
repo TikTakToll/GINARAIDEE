@@ -1,3 +1,4 @@
+
 //Create ต้นแบบ
 'use client';
 
@@ -34,7 +35,7 @@ export default function CreateRoomPage() {
             const newRoom = await createRoom(roomData);
 
             // นำทางไปยังหน้าห้องที่สร้างใหม่
-            router.push(`/rooms/${newRoom.roomCode}/lobbyjoin?ownerUser=${encodeURIComponent(ownerUser)}`);
+            router.push(`/rooms/${newRoom.roomCode}/lobbyjoin?memberName=${encodeURIComponent(ownerUser)}`);
         } catch (err) {
             setError('เกิดข้อผิดพลาดในการสร้างห้อง กรุณาลองใหม่อีกครั้ง');
             console.error(err);
@@ -126,4 +127,3 @@ export default function CreateRoomPage() {
         </div>
     );
 }
-

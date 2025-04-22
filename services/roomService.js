@@ -77,23 +77,23 @@ export async function leaveRoom(roomCode, memberName) {
 
 
 
-    //Update
+//Update
 export async function getRoomInfo(roomCode) {
     const response = await fetch(`${API_BASE_URL}/rooms/${roomCode}`, {
         method: 'GET',
         headers: {
-                'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
     });
 
     if (!response.ok) {
-            throw new Error('Failed to get room info');
+        throw new Error('Failed to get room info');
     }
 
     return response.json(); // ได้ Room object มาใช้
 }
 
-    //Kick members
+//Kick members
 export async function kickMember(roomCode, ownerUser, memberName) {
     const response = await fetch(`${API_BASE_URL}/rooms/kick/${roomCode}?ownerUser=${encodeURIComponent(ownerUser)}&memberName=${encodeURIComponent(memberName)}`, {
         method: 'POST',
