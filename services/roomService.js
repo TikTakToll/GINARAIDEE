@@ -39,8 +39,8 @@ export async function joinRoom({ roomCode, memberName }) {
     }
 }
 
-export async function selectFood(roomCode, memberName, foodType) {
-    const response = await fetch(`${API_BASE_URL}/rooms/selectFood/${roomCode}?memberName=${encodeURIComponent(memberName)}&foodType=${encodeURIComponent(foodType)}`, {
+export async function selectFood(roomCode, member, foodType) {
+    const response = await fetch(`${API_BASE_URL}/rooms/selectFood/${roomCode}?member=${encodeURIComponent(member)}&foodType=${encodeURIComponent(foodType)}`, {
         method: 'POST',
     });
 
@@ -104,4 +104,17 @@ export async function kickMember(roomCode, ownerUser, memberName) {
     }
 
     return response.text();
+}
+
+//Set ready
+export async function setMemberReady(roomCode, memberName, ready) {
+    const response = await fetch(`${API_BASE_URL}/rooms/ready/${roomCode}?memberName=${encodeURIComponent(memberName)}&ready=${ready}`, {
+        method: 'POST',
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to set ready status');
+    }
+
+    return response.text(); // หรือ .json() ถ้า backend return json
 }

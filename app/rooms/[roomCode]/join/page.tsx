@@ -1,10 +1,9 @@
-
-//Join ต้นแบบ
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { joinRoom, getRoomInfo } from '@/services/roomService';
+import { Button } from '@/component/ui/Button'; // ตรวจสอบ path นี้ให้ตรงกับโปรเจกต์ของคุณ
 
 export default function JoinRoomPage() {
     const [roomCode, setRoomCode] = useState('');
@@ -30,13 +29,8 @@ export default function JoinRoomPage() {
         setIsLoading(true);
 
         try {
-            // เรียก joinRoom แบบใหม่ (POST + body)
             await joinRoom({ roomCode, memberName });
-
-            // ตรวจสอบห้องว่าเข้าร่วมสำเร็จ
             const room = await getRoomInfo(roomCode);
-
-            // ไปที่หน้าห้องพร้อมส่งชื่อผู้ใช้ไป
             router.push(`/rooms/${roomCode}/lobbyjoin?memberName=${encodeURIComponent(memberName)}`);
         } catch (err: any) {
             setError(err.message || 'เกิดข้อผิดพลาดในการเข้าร่วมห้อง กรุณาลองใหม่อีกครั้ง');
@@ -102,26 +96,35 @@ export default function JoinRoomPage() {
                     </div>
 
                     <div className="flex flex-col space-y-3">
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full border-2 border-orange-300 bg-red-400 hover:bg-orange-50 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
-                        >
-                            {isLoading ? 'กำลังเข้าร่วม...' : 'เข้าร่วมห้อง'}
-                        </button>
+                        {/* ปุ่มเข้าร่วมห้อง */}
+                        <div onClick={!isLoading ? handleJoinRoom : undefined} className="w-full">
+                            <Button
+                                variant="three-d"
+                                className="w-full"
+                                disabled={isLoading}
+                                type="submit"
+                            >
+                                <div className="flex items-center justify-center text-lg">
+                                    {isLoading ? 'กำลังเข้าร่วม...' : 'เข้าร่วมห้อง'}
+                                </div>
+                            </Button>
+                        </div>
 
-                        <button
+                        {/* ปุ่มกลับหน้าหลัก */}
+                        <Button
                             type="button"
+                            variant="three-d"
+                            className="w-full"
                             onClick={() => router.push('/')}
                             disabled={isLoading}
-                            className="w-full border-2 border-orange-300 bg-orange-500 hover:bg-orange-50 text-white  hover:border-orange-400 hover:text-orange-800 shadow-md hover:shadow-lg transition-all duration-300 font-medium py-2 px-4 rounded-md  cursor-pointer"
                         >
-                            กลับไปหน้าหลัก
-                        </button>
+                            <div className="flex items-center justify-center text-lg">
+                                กลับไปหน้าหลัก
+                            </div>
+                        </Button>
                     </div>
                 </form>
             </div>
         </div>
     );
 }
-

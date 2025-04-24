@@ -1,34 +1,52 @@
-
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { useRouter,useSearchParams } from 'next/navigation';
-import {getRoomInfo, kickMember, leaveRoom} from '@/services/roomService';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { getRoomInfo, kickMember, leaveRoom,selectFood,setMemberReady } from '@/services/roomService';
 
 
 export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: string }> }) {
     const { roomCode } = use(params);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const memberName = searchParams.get('memberName') || 'ผู้ใช้';
+    const memberName = searchParams.get('memberName');
+    const [isReady, setIsReady] = useState(false);
 
     const [members, setMembers] = useState<string[]>([]);
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedMyFoods, setSelectedMyFoods] = useState<string[]>([]);
     const [owner, setOwner] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [ownerUser, setOwnerUser] = useState<string>('');
 
+    // ✅ เพิ่ม state สำหรับเก็บสถานะ ready ของสมาชิกแต่ละคน
+    const [readyStatus, setReadyStatus] = useState<Record<string, boolean>>({});
 
-    const categories = ['อาหารไทย', 'อาหารญี่ปุ่น', 'อาหารเกาหลี', 'อาหารจีน', 'อาหารฝรั่ง'];
+    const DEFAULT_FOOD_TYPES = [
+        "ของหวาน", "อาหารตามสั่ง", "อาหารจานเดียว",
+        "ก๋วยเตี๋ยว", "เครื่องดื่ม/น้ำผลไม้", "เบเกอรี/เค้ก",
+        "ชาบู", "อาหารเกาหลี", "ปิ้งย่าง"
+    ];
+
 
     useEffect(() => {
         const fetchRoomInfo = async () => {
             try {
                 const data = await getRoomInfo(roomCode);
                 setMembers(data.members || []);
-                setSelectedCategories(data.selectedCategories || []);
+                // @ts-ignore
+                setSelectedMyFoods(data.memberFoodSelections?.[memberName] || []);
                 setOwner(data.owner || null);
-                setOwnerUser(data.ownerUser); // ✅ ดึง owner มาเก็บไว้
+                setOwnerUser(data.ownerUser);
+
+                // ✅ ตั้งค่าตัวแปร readyStatus จากข้อมูลที่ดึงมา
+                setReadyStatus(data.readyStatus || {});
+
+                // ✅ ตั้ง isReady ของผู้ใช้เอง จาก readyStatus
+                if (memberName && data.readyStatus?.[memberName] !== undefined) {
+                    setIsReady(data.readyStatus[memberName]);
+                }
+
             } catch (err) {
                 console.error('Failed to fetch room info:', err);
             } finally {
@@ -39,60 +57,81 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
         fetchRoomInfo();
     }, [roomCode]);
 
-    const handleCategoryChange = (category: string) => {
-        setSelectedCategories(prev =>
-            prev.includes(category)
-                ? prev.filter(c => c !== category)
-                : [...prev, category]
-        );
-    };
 
-
-    //เตะคน
     const handleKick = async (member: string) => {
         if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการเตะ ${member} ออกจากห้อง?`)) return;
 
         try {
-            await kickMember(roomCode, memberName, member); // memberName = คนที่ login เข้ามา
+            await kickMember(roomCode, memberName, member);
             alert(`เตะ ${member} ออกจากห้องเรียบร้อย`);
-            setMembers(prev => prev.filter(m => m !== member)); // อัปเดตทันที
-        } catch (err) {
-            // @ts-ignore
+            setMembers(prev => prev.filter(m => m !== member));
+        } catch (err: any) {
             alert('เตะสมาชิกไม่สำเร็จ: ' + err.message);
         }
     };
 
+    // const handleLeaveRoom = async () => {
+    //     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากห้องนี้?')) return;
+    //
+    //     try {
+    //         const response = await leaveRoom(roomCode, memberName);
+    //         alert('ออกจากห้องเรียบร้อย: ' + response.data);
+    //         router.push('/');
+    //     } catch (err: any) {
+    //         alert('ออกจากห้องไม่สำเร็จ: ' + (err?.response?.data || err.message));
+    //     }
+    // };
+
+    //แก้ response.data ที่แดง
 
     const handleLeaveRoom = async () => {
         if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากห้องนี้?')) return;
 
         try {
-            const response = await leaveRoom(roomCode, memberName!);
-            // @ts-ignore
-            alert('ออกจากห้องเรียบร้อย: ' + response.data);
+            const response = await leaveRoom(roomCode, memberName);
+            // ถ้า response เป็น string โดยตรง
+            alert('ออกจากห้องเรียบร้อย: ' + response);
             router.push('/');
         } catch (err: any) {
             alert('ออกจากห้องไม่สำเร็จ: ' + (err?.response?.data || err.message));
         }
     };
 
-
-    const handleRandomFood = () => {
-        if (selectedCategories.length === 0) {
-            alert('กรุณาเลือกประเภทอาหารก่อนสุ่ม');
+    // ฟังก์ชันจัดการการเลือกอาหาร
+    const handleSelectFood = async (foodType: string) => {
+        if (selectedMyFoods.includes(foodType)) {
+            alert('คุณได้เลือกประเภทอาหารนี้แล้ว!');
             return;
         }
-        console.log('สุ่มจาก:', selectedCategories);
-        // เพิ่มการนำทางไปหน้าผลลัพธ์หรือ popup ได้ที่นี่
+
+        try {
+            const response = await selectFood(roomCode, memberName!, foodType);
+
+            if (response.error) {
+                alert(response.error);
+                return;
+            }
+
+            setSelectedMyFoods(response.selectedFoods);
+        } catch (err: any) {
+            alert('เลือกประเภทอาหารไม่สำเร็จ: ' + (err?.response?.data || err.message));
+        }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <p className="text-gray-600">กำลังโหลดข้อมูลห้อง...</p>
-            </div>
-        );
-    }
+
+
+    const handleReadyToggle = async () => {
+        try {
+            const newReadyStatus = !isReady;
+            await setMemberReady(roomCode, memberName!, newReadyStatus);
+            setIsReady(newReadyStatus);
+            // ✅ อัปเดต readyStatus ของผู้ใช้ใน state รวม
+            setReadyStatus(prev => ({ ...prev, [memberName!]: newReadyStatus }));
+        } catch (err: any) {
+            alert('ตั้งค่าสถานะไม่สำเร็จ: ' + err.message);
+        }
+    };
+
 
     return (
         <div
@@ -107,46 +146,74 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                 <div className="text-left">
                     <h2 className="font-semibold mb-2">สมาชิกในห้อง:</h2>
                     <ul className="list-disc list-inside text-sm text-left space-y-1">
-                        {members.map((member, index) => (
-                            <li key={index} className="flex justify-between items-center">
-                                <span>{member}</span>
-
-                                {memberName === ownerUser && member !== ownerUser && (
-                                    <button
-                                        onClick={() => handleKick(member)}
-                                        className="text-red-500 text-xs hover:underline"
-                                    >
-                                        เตะ
-                                    </button>
-                                )}
-                            </li>
-                        ))}
+                        {members.map((member, index) => {
+                            const isMemberReady = readyStatus?.[member]; // ✅ ตรวจสถานะ ready
+                            return (
+                                <li
+                                    key={index}
+                                    className={`flex justify-between items-center p-1 rounded ${
+                                        isMemberReady ? 'border-2 border-green-500' : ''
+                                    }`}
+                                >
+                                    <span>{member}</span>
+                                    {memberName === ownerUser && member !== ownerUser && (
+                                        <button
+                                            onClick={() => handleKick(member)}
+                                            className="text-red-500 text-xs hover:underline"
+                                        >
+                                            เตะ
+                                        </button>
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
-
-                <div className="text-left">
-                    <h2 className="font-semibold mb-2">เลือกประเภทอาหาร</h2>
-                    <div className="grid grid-cols-2 gap-2">
-                        {categories.map((cat) => (
-                            <label key={cat} className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedCategories.includes(cat)}
-                                    onChange={() => handleCategoryChange(cat)}
-                                />
-                                <span>{cat}</span>
-                            </label>
+                <div className="text-left mt-4">
+                    <h2 className="font-semibold mb-2">เลือกประเภทอาหารที่คุณอยากกิน 🍽️</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {DEFAULT_FOOD_TYPES.map((type, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleSelectFood(type)}
+                                className={`px-3 py-1 rounded-full border ${
+                                    selectedMyFoods.includes(type)
+                                        ? 'bg-green-500 text-white border-green-600'
+                                        : 'bg-white hover:bg-gray-100 border-gray-300'
+                                } transition-all text-sm`}
+                            >
+                                {type}
+                            </button>
                         ))}
+                    </div>
+
+                    <div className="mt-4">
+                        <h3 className="text-sm font-semibold mb-1">คุณเลือกแล้ว:</h3>
+                        {selectedMyFoods.length > 0 ? (
+                            <ul className="list-disc list-inside text-sm">
+                                {selectedMyFoods.map((type, idx) => (
+                                    <li key={idx}>{type}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500 text-sm">ยังไม่ได้เลือกอาหารเลย 😋</p>
+                        )}
                     </div>
                 </div>
 
-                <button
-                    onClick={handleRandomFood}
-                    className="w-full bg-orange-400 text-white py-2 px-4 rounded hover:bg-orange-500 transition-all"
-                >
-                    🎲 สุ่มอาหาร!
-                </button>
 
+                <button
+                    onClick={handleReadyToggle}
+                    className={`w-full py-2 px-4 rounded transition-all ${isReady ? 'bg-green-500 text-white' : 'bg-yellow-400 text-black hover:bg-yellow-500'}`}
+                >
+                    {isReady ? '✅ พร้อมแล้ว' : '⚪ ยังไม่พร้อม'}
+                </button>
+                <button
+                    onClick={handleLeaveRoom}
+                    className="w-full bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400 transition-all"
+                >
+                    🚪 ออกจากห้อง
+                </button>
                 <button
                     onClick={handleLeaveRoom}
                     className="w-full bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400 transition-all"
