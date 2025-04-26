@@ -12,8 +12,8 @@ export default function Navbar() {
     const roomCode = searchParams.get("roomCode") || "default"; // fallback
 
     const menuItems = [
-        { label: "เข้าร่วมห้อง", href: `/rooms/${roomCode}/join` },
         { label: "สร้างห้อง", href: "/rooms/create" },
+        { label: "เข้าร่วมห้อง", href: `/rooms/${roomCode}/join` },
         { label: "เกี่ยวกับ", href: "/rooms/about" },
     ];
 

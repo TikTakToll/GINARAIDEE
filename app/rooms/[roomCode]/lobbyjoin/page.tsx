@@ -99,11 +99,6 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     // ฟังก์ชันจัดการการเลือกอาหาร
     const handleSelectFood = async (foodType: string) => {
-        if (selectedMyFoods.includes(foodType)) {
-            alert('คุณได้เลือกประเภทอาหารนี้แล้ว!');
-            return;
-        }
-
         try {
             const response = await selectFood(roomCode, memberName!, foodType);
 
@@ -122,15 +117,24 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     const handleReadyToggle = async () => {
         try {
-            const newReadyStatus = !isReady;
-            await setMemberReady(roomCode, memberName!, newReadyStatus);
-            setIsReady(newReadyStatus);
-            // ✅ อัปเดต readyStatus ของผู้ใช้ใน state รวม
-            setReadyStatus(prev => ({ ...prev, [memberName!]: newReadyStatus }));
+            const newReadyStatus = !isReady; // ✅ สลับสถานะ Ready (ถ้า true → false, ถ้า false → true)
+
+            await setMemberReady(roomCode, memberName!, newReadyStatus); // ✅ เรียก API ไปอัปเดตสถานะที่หลังบ้าน
+
+            setIsReady(newReadyStatus); // ✅ อัปเดตสถานะ Ready เฉพาะของตัวเองใน state
+
+            setReadyStatus(prev => ({ ...prev, [memberName!]: newReadyStatus })); // ✅ อัปเดต readyStatus รวมของสมาชิกในห้อง
+
+            if (!newReadyStatus) {
+                // ✅ ถ้ายกเลิก Ready (newReadyStatus = false) → เคลียร์อาหารที่เลือกของตัวเองด้วย
+                setSelectedMyFoods([]);
+            }
         } catch (err: any) {
             alert('ตั้งค่าสถานะไม่สำเร็จ: ' + err.message);
         }
     };
+
+
 
 
     return (

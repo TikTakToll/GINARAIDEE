@@ -110,7 +110,7 @@ export default function Home() {
 
             <main className="flex-grow py-6 px-4 flex items-center justify-center">
                 <div className="w-full max-w-md">
-                    <Card className="w-full p-8 border-0 shadow-xl bg-white border-2 border-orange-300 bg-opacity-90 backdrop-blur-sm rounded-2xl">
+                    <Card className="w-full p-8 shadow-xl bg-white border-2 border-orange-300 bg-opacity-90 backdrop-blur-sm rounded-2xl">
 
                         <div className="text-center mb-6">
                             <div className="inline-block p-2 bg-white border-2 border-orange-300 rounded-full shadow-lg mb-4">
