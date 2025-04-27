@@ -113,8 +113,6 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
         }
     };
 
-
-
     const handleReadyToggle = async () => {
         try {
             const newReadyStatus = !isReady; // ✅ สลับสถานะ Ready (ถ้า true → false, ถ้า false → true)
@@ -140,7 +138,10 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
     return (
         <div
             className="fixed inset-0 flex items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")` }}
+            style={{
+                // backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`
+                backgroundColor: '#FFEBCD',
+            }}
         >
             <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-md w-full space-y-4">
                 <h1 className="text-2xl font-bold">ห้อง: {roomCode}</h1>

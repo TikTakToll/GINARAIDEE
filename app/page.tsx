@@ -90,11 +90,14 @@
 //     );
 // }
 
-
+//ทำปุ่มใหม่
+//เพิ่ม React icon
 import Link from "next/link";
 import { Button } from "@/component/ui/Button";
 import { Card } from "@/component/ui/Card";
 import { TbBowlSpoon } from "react-icons/tb"; //import React icon
+
+
 
 export default function Home() {
 
@@ -102,19 +105,20 @@ export default function Home() {
         <div
             className="min-h-screen flex flex-col"
             style={{
-                backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
+                // backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
+                backgroundColor: '#FFEBCD',
             }}
         >
 
             <main className="flex-grow py-6 px-4 flex items-center justify-center">
                 <div className="w-full max-w-md">
-                    <Card className="w-full p-8 shadow-xl bg-white border-2 border-orange-300 bg-opacity-90 backdrop-blur-sm rounded-2xl">
+                    <Card className="w-full p-8 shadow-xl bg-white border-2 border-orange-200 bg-opacity-90 backdrop-blur-sm rounded-2xl">
 
                         <div className="text-center mb-6">
                             <div className="inline-block p-2 bg-white border-2 border-orange-300 rounded-full shadow-lg mb-4">
-                                <TbBowlSpoon className="text-6xl text-orange-500" />
+                                <TbBowlSpoon className="text-6xl text-orange-400" />
                             </div>
                             <h1 className="text-4xl font-bold text-orange-800 mb-2">GINARAIDEE</h1>
                             <p className="text-xl text-orange-600 font-medium">ไม่รู้จะกินอะไร? มาสุ่มกันเถอะ!</p>

@@ -178,11 +178,11 @@ export default function CreateRoomPage() {
         <div
             className="fixed inset-0 flex items-center justify-center"
             style={{
-                backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
+                // backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
-                backgroundColor: '#f8f7ff',
+                backgroundColor: '#FFEBCD',
                 overflow: 'hidden'
             }}
         >
