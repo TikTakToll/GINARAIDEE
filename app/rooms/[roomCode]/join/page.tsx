@@ -98,7 +98,6 @@ export default function JoinRoomPage() {
                         {/* ปุ่มเข้าร่วมห้อง */}
                         <div onClick={!isLoading ? handleJoinRoom : undefined} className="w-full">
                             <Button
-                                variant="three-d"
                                 className="w-full"
                                 disabled={isLoading}
                                 type="submit"
@@ -112,7 +111,6 @@ export default function JoinRoomPage() {
                         {/* ปุ่มกลับหน้าหลัก */}
                         <Button
                             type="button"
-                            variant="three-d"
                             className="w-full"
                             onClick={() => router.push('/')}
                             disabled={isLoading}

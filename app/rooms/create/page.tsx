@@ -247,7 +247,6 @@ export default function CreateRoomPage() {
                     {/* แทนที่ปุ่มเดิมด้วย Button แบบ 3D */}
                     <div onClick={!isLoading ? handleSubmit : undefined} className="w-full">
                         <Button
-                            variant="three-d"
                             className="w-full"
                             disabled={isLoading}
                             type="submit"
