@@ -78,7 +78,7 @@ export default function AboutPage() {
             {/* 🖼 ทีมของเรา Section: Hover Card */}
             <section className="py-16 bg-orange-100" data-aos="fade-up">
                 <div className="max-w-6xl mx-auto px-6">
-                    <h2 className="text-4xl font-bold text-orange-800 mb-12 text-center">ทีมของเรา</h2>
+                    <h2 className="text-4xl font-bold text-orange-800 mb-12 text-center">สมาชิกในกลุ่ม</h2>
                     <div className="grid md:grid-cols-3 gap-10">
                         {/* Card Example */}
                         {[

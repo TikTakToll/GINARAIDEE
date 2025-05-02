@@ -118,3 +118,7 @@ export async function setMemberReady(roomCode, memberName, ready) {
 
     return response.text(); // หรือ .json() ถ้า backend return json
 }
+
+
+
+

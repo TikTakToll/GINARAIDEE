@@ -14,7 +14,8 @@ body {
   background: rgb(var(--background-rgb));
 }
 
-/* Card Hover Effect */
+/* Card Hover Effect ในหน้า About */
+
 .card {
   position: relative;
   width: 100%;
