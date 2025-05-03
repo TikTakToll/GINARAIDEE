@@ -75,3 +75,15 @@ body {
   text-align: center;
   line-height: 1.4;
 }
+
+@keyframes food-spin {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-1000px); /* ปรับตามความยาว */
+  }
+}
+.animate-food-spin {
+  animation: food-spin 5s ease-in-out forwards;
+}

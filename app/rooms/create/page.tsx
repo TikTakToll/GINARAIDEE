@@ -139,8 +139,8 @@ import { Button } from '@/component/ui/Button';
 export default function CreateRoomPage() {
     const router = useRouter();
     const [ownerUser, setOwnerUser] = useState('');
-    const [maxUsers, setMaxUsers] = useState(5);
-    const [maxFoodSelectionsPerMember, setMaxFoodSelectionsPerMember] = useState(3);
+    const [maxUsers, setMaxUsers] = useState(3);
+    const [maxFoodSelectionsPerMember, setMaxFoodSelectionsPerMember] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 

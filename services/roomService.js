@@ -51,6 +51,8 @@ export async function selectFood(roomCode, member, foodType) {
     return response.json();
 }
 
+
+
 export async function randomizeFood(roomCode, ownerUser) {
     const response = await fetch(`${API_BASE_URL}/rooms/randomFood/${roomCode}?ownerUser=${encodeURIComponent(ownerUser)}`, {
         method: 'POST',
@@ -63,6 +65,8 @@ export async function randomizeFood(roomCode, ownerUser) {
     return response.json();
 }
 
+
+//ออกจากห้อง
 export async function leaveRoom(roomCode, memberName) {
     const response = await fetch(`${API_BASE_URL}/rooms/leave/${roomCode}?memberName=${encodeURIComponent(memberName)}`, {
         method: 'POST',
