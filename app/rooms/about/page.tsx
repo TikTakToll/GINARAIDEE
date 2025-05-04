@@ -33,7 +33,7 @@ export default function AboutPage() {
     return (
         <div className="min-h-[var(--app-height)] flex flex-col">
             {/* Hero Section */}
-            <section className="flex items-center justify-center text-center py-20 px-6 bg-orange-200" data-aos="fade-down">
+            <section className="flex items-center justify-center text-center py-20 px-6 bg-white " data-aos="fade-down">
                 <div>
                     <h1 className="text-5xl font-bold text-orange-900 mb-4">เกี่ยวกับ GINARAIDEE</h1>
                     <p className="text-lg text-orange-700 max-w-2xl mx-auto">
@@ -48,7 +48,7 @@ export default function AboutPage() {
                     {/* Mission Card 1 */}
                     <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-up">
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">ภารกิจของเรา</h2>
-                        <p className="text-md text-gray-700 leading-7">
+                        <p className="text-md text-orange-700 leading-7">
                             เรามุ่งเน้นการสร้างประสบการณ์ที่เรียบง่าย สนุก และเชื่อถือได้
                             เพื่อช่วยให้คุณและเพื่อนๆ เลือกอาหารได้แบบไม่มีดราม่า
                         </p>
@@ -57,7 +57,7 @@ export default function AboutPage() {
                     {/* Mission Card 2 */}
                     <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-right">
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">ทำไมต้อง GINARAIDEE?</h2>
-                        <ul className="list-disc pl-6 text-gray-700 space-y-3">
+                        <ul className="list-disc pl-6 text-orange-700 space-y-3">
                             <li>ระบบสุ่มที่แฟร์และน่าเชื่อถือ</li>
                             <li>เลือกประเภทอาหารได้ตามใจ</li>
                             <li>เหมาะกับการชวนเพื่อน-ครอบครัวมาโหวตสนุกๆ</li>
@@ -67,7 +67,7 @@ export default function AboutPage() {
                     {/* Mission Card 3 */}
                     <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-left">
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">เป้าหมายในอนาคต</h2>
-                        <p className="text-md text-gray-700 leading-7">
+                        <p className="text-md text-orange-700 leading-7">
                             เรากำลังวางแผนที่จะเพิ่มฟีเจอร์ใหม่ เช่น ระบบรีวิวร้าน, โปรโมชั่นพิเศษ และการเชื่อมต่อกับแผนที่ร้านอาหารรอบตัวคุณ
                         </p>
                     </div>
@@ -75,7 +75,7 @@ export default function AboutPage() {
             </section>
 
             {/* 🖼 ทีมของเรา Section: Hover Card */}
-            <section className="py-16 bg-orange-100" data-aos="fade-up">
+            <section className="py-16 bg-orange-200" data-aos="fade-up">
                 <div className="max-w-6xl mx-auto px-6">
                     <h2 className="text-4xl font-bold text-orange-800 mb-12 text-center">สมาชิกในกลุ่ม</h2>
                     <div className="grid md:grid-cols-3 gap-10">
@@ -106,7 +106,7 @@ export default function AboutPage() {
 
 
             {/* Footer */}
-            <footer className="bg-orange-300 text-orange-900 text-center py-6 mt-auto" data-aos="fade-up">
+            <footer className="bg-orange-300 text-orange-900 text-center py-6 mt-auto" >
                 <p className="text-sm">&copy; 2025 GINARAIDEE. All rights reserved.</p>
             </footer>
         </div>
