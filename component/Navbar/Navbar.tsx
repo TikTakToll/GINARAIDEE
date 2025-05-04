@@ -5,6 +5,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { BiLogoGoogle } from "react-icons/bi";
 import { useState, useEffect } from "react";
+import MenuItems from "./MenuItems";
+import Logo from "./Logo";
+import { DarkMode } from "./DarkMode";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -43,34 +46,11 @@ export default function Navbar() {
             visible ? 'translate-y-0' : '-translate-y-full'
         }`}>
             <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-                {/* 🔶 โลโก้ */}
-                <Link href="/" className="flex items-center space-x-2">
-                    <div className="h-10 w-10 bg-orange-400 rounded-full flex items-center justify-center">
-                        <BiLogoGoogle className="text-3xl text-white"/>
-                    </div>
-                    <span className="text-xl font-bold text-orange-400">GINARAIDEE</span>
-                </Link>
-
-                {/* 🔷 เมนูขวาทั้งหมด */}
-                <ul className="flex space-x-6 text-gray-700 font-medium ml-auto">
-                    {menuItems.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <li key={item.href} className="relative">
-                                <Link href={item.href} className="px-1 py-2 hover:text-orange-500 transition">
-                                    {item.label}
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="underline"
-                                            className="absolute left-0 right-0 -bottom-1 h-[3px] bg-orange-500 rounded-full"
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    )}
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
+                <Logo />
+                <div className="flex items-center gap-4 ml-auto">
+                <MenuItems items={menuItems} currentPath={pathname} />
+                <DarkMode />
+                </div>
             </div>
         </nav>
     );

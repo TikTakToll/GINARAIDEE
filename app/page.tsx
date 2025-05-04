@@ -8,7 +8,7 @@
 //         <div
 //             className="min-h-screen flex flex-col"
 //             style={{
-//                 backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
+//                 backgroundImage: url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg"),
 //                 backgroundSize: 'cover',
 //                 backgroundPosition: 'center',
 //             }}
@@ -103,13 +103,13 @@ export default function Home() {
 
     return (
         <div
-            className="min-h-screen flex flex-col"
-            style={{
-                // backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: '#FFEBCD',
-            }}
+            className="min-h-screen flex flex-col bg-orange-200 dark:bg-amber-300"
+            // style={{
+            //     // backgroundImage: url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg"),
+            //     backgroundSize: 'cover',
+            //     backgroundPosition: 'center',
+            //     backgroundColor: '#FFEBCD',
+            // }}
         >
 
             <main className="flex-grow py-6 px-4 flex items-center justify-center">

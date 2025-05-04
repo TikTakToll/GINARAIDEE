@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
 import { useEffect, useState, use } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
     getRoomInfo,
     kickMember,
@@ -13,72 +12,66 @@ import {
 } from "@/services/roomService";
 import { motion } from "framer-motion";
 
-export default function RoomLobbyPage({
-    params,
-}: {
-    params: Promise<{ roomCode: string }>;
-}) {
+export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: string }> }) {
+    // Extract params and setup hooks
     const { roomCode } = use(params);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const memberName = searchParams.get("memberName");
+    const memberName = useSearchParams().get("memberName");
 
-    const [isReady, setIsReady] = useState(false);
-    const [members, setMembers] = useState<string[]>([]);
-    const [selectedMyFoods, setSelectedMyFoods] = useState<string[]>([]);
-    const [ownerUser, setOwnerUser] = useState<string>("");
-    const [readyStatus, setReadyStatus] = useState<Record<string, boolean>>({});
-    const [memberFoodSelections, setMemberFoodSelections] = useState<Record<string, string[]>>({});
-    const [isLoading, setIsLoading] = useState(true);
+    // Group related state together
+    const [roomState, setRoomState] = useState({
+        isReady: false,
+        members: [] as string[],
+        selectedMyFoods: [] as string[],
+        ownerUser: "",
+        readyStatus: {} as Record<string, boolean>,
+        memberFoodSelections: {} as Record<string, string[]>,
+        isLoading: true,
+        allMembersReady: false,
+    });
+
     const [foodOptions, setFoodOptions] = useState<any[]>([]);
-    const [allMembersReady, setAllMembersReady] = useState(false);
     const [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
-    const isAllReady = members.every((member) => readyStatus[member]);
+
+    // Computed values
+    const isAllReady = roomState.members.every((member) => roomState.readyStatus[member]);
 
     const DEFAULT_FOOD_TYPES = [
-        "ของหวาน",
-        "อาหารตามสั่ง",
-        "อาหารจานเดียว",
-        "ก๋วยเตี๋ยว",
-        "เครื่องดื่ม/น้ำผลไม้",
-        "เบเกอรี/เค้ก",
-        "ชาบู",
-        "อาหารเกาหลี",
-        "ปิ้งย่าง",
+        "ของหวาน", "อาหารตามสั่ง", "อาหารจานเดียว", "ก๋วยเตี๋ยว",
+        "เครื่องดื่ม/น้ำผลไม้", "เบเกอรี/เค้ก", "ชาบู", "อาหารเกาหลี", "ปิ้งย่าง",
     ];
 
     useEffect(() => {
         const fetchRoomInfo = async () => {
             try {
                 const data = await getRoomInfo(roomCode);
-                setMembers(data.members || []);
-                setSelectedMyFoods(data.memberFoodSelections?.[memberName] || []);
-                setOwnerUser(data.ownerUser);
-                setReadyStatus(data.readyStatus || {});
-                setMemberFoodSelections(data.memberFoodSelections || {});
-                if (memberName && data.readyStatus?.[memberName] !== undefined) {
-                    setIsReady(data.readyStatus[memberName]);
-                }
-                const mockOptions = generateMockFoodOptions();
-                setFoodOptions(mockOptions);
-                checkAllMembersReady(data.members, data.readyStatus);
+
+                setRoomState({
+                    isReady: memberName && data.readyStatus?.[memberName] || false,
+                    members: data.members || [],
+                    selectedMyFoods: data.memberFoodSelections?.["memberName"] || [],
+                    ownerUser: data.ownerUser,
+                    readyStatus: data.readyStatus || {},
+                    memberFoodSelections: data.memberFoodSelections || {},
+                    isLoading: false,
+                    allMembersReady: checkAllMembersReady(data.members, data.readyStatus),
+                });
+
+                setFoodOptions(generateMockFoodOptions());
             } catch (err) {
                 console.error("Failed to fetch room info:", err);
-            } finally {
-                setIsLoading(false);
+                setRoomState(prev => ({ ...prev, isLoading: false }));
             }
         };
 
         fetchRoomInfo();
         const intervalId = setInterval(fetchRoomInfo, 500000);
         return () => clearInterval(intervalId);
-    }, [roomCode]);
+    }, [roomCode, memberName]);
 
     const checkAllMembersReady = (membersList: string[], statusObj: Record<string, boolean>) => {
         if (!membersList || !statusObj || membersList.length === 0) return false;
-        const allReady = membersList.every((member) => statusObj[member] === true);
-        setAllMembersReady(allReady);
-        return allReady;
+        return membersList.every((member) => statusObj[member]);
     };
 
     const generateMockFoodOptions = () => {
@@ -107,7 +100,10 @@ export default function RoomLobbyPage({
         try {
             await kickMember(roomCode, memberName!, member);
             alert(`เตะ ${member} ออกจากห้องเรียบร้อย`);
-            setMembers((prev) => prev.filter((m) => m !== member));
+            setRoomState(prev => ({
+                ...prev,
+                members: prev.members.filter(m => m !== member)
+            }));
         } catch (err: any) {
             alert("เตะสมาชิกไม่สำเร็จ: " + err.message);
         }
@@ -131,13 +127,19 @@ export default function RoomLobbyPage({
                 alert(response.error);
                 return;
             }
-    
-            // ✅ อัปเดตเฉพาะของตัวเอง
-            setSelectedMyFoods(response.selectedFoods);
-    
-            // ✅ โหลดข้อมูลห้องใหม่เพื่อให้ได้ของสมาชิกคนอื่นด้วย
+
+            // อัปเดตเฉพาะของตัวเอง
+            setRoomState(prev => ({
+                ...prev,
+                selectedMyFoods: response.selectedFoods
+            }));
+
+            // โหลดข้อมูลห้องใหม่เพื่อให้ได้ของสมาชิกคนอื่นด้วย
             const updatedRoom = await getRoomInfo(roomCode);
-            setMemberFoodSelections(updatedRoom.memberFoodSelections || {});
+            setRoomState(prev => ({
+                ...prev,
+                memberFoodSelections: updatedRoom.memberFoodSelections || {}
+            }));
         } catch (err: any) {
             alert("เลือกประเภทอาหารไม่สำเร็จ: " + (err?.response?.data || err.message));
         }
@@ -145,16 +147,19 @@ export default function RoomLobbyPage({
 
     const handleReadyToggle = async () => {
         try {
-            const newReadyStatus = !isReady;
+            const newReadyStatus = !roomState.isReady;
             await setMemberReady(roomCode, memberName!, newReadyStatus);
-            setIsReady(newReadyStatus);
-            setReadyStatus((prev) => ({ ...prev, [memberName!]: newReadyStatus }));
-            if (!newReadyStatus) setSelectedMyFoods([]);
+
+            setRoomState(prev => ({
+                ...prev,
+                isReady: newReadyStatus,
+                readyStatus: { ...prev.readyStatus, [memberName!]: newReadyStatus },
+                selectedMyFoods: newReadyStatus ? prev.selectedMyFoods : []
+            }));
         } catch (err: any) {
             alert("ตั้งค่าสถานะไม่สำเร็จ: " + err.message);
         }
     };
-
 
     const handleRandomizeFood = async () => {
         try {
@@ -169,7 +174,7 @@ export default function RoomLobbyPage({
         }
     };
 
-    if (isLoading) {
+    if (roomState.isLoading) {
         return (
             <div className="fixed inset-0 flex items-center justify-center bg-orange-50">
                 <motion.div
@@ -185,9 +190,11 @@ export default function RoomLobbyPage({
         );
     }
 
+    const { members, ownerUser, readyStatus, memberFoodSelections, selectedMyFoods, isReady } = roomState;
+
     return (
         <motion.div className="fixed inset-0 overflow-hidden bg-orange-50">
-            <div className="mt-60 h-full max-w-4xl mx-auto p-4 overflow-auto">
+            <div className="mt-50 h-full max-w-4xl mx-auto p-4 overflow-auto">
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -202,11 +209,9 @@ export default function RoomLobbyPage({
                                 ยินดีต้อนรับ <span className="font-semibold">{memberName}</span>!
                             </p>
                         </div>
-                        <div className="text-right">
-                            <p className="text-sm bg-white/20 px-3 py-1 rounded-full">
-                                สมาชิก {members.length} คน
-                            </p>
-                        </div>
+                        <p className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                            สมาชิก {members.length} คน
+                        </p>
                     </div>
 
                     {/* Main content */}
@@ -230,9 +235,7 @@ export default function RoomLobbyPage({
                                         <div className="flex items-center">
                                             <span
                                                 className={`w-2 h-2 rounded-full mr-2 ${
-                                                    readyStatus[member]
-                                                        ? "bg-green-500"
-                                                        : "bg-gray-400"
+                                                    readyStatus[member] ? "bg-green-500" : "bg-gray-400"
                                                 }`}
                                             ></span>
                                             <span className="font-medium">{member}</span>
@@ -246,33 +249,31 @@ export default function RoomLobbyPage({
                                             <button
                                                 onClick={() => handleKick(member)}
                                                 className="text-red-500 hover:text-red-700 text-sm flex items-center"
-                                            >เตะ
+                                            >
+                                                เตะ
                                             </button>
                                         )}
                                     </motion.div>
                                 ))}
                             </div>
-                           
 
                             {/* Ready & Leave */}
                             <div className="flex flex-col gap-3 mt-6">
-
-                            {/* {แก้ลิ้งไปหน้า resultเมื่อทำการ random แล้ว ไอบอมทำ} */}
-                            {ownerUser === memberName && (
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleRandomizeFood}
-                                    disabled={!isAllReady}
-                                    className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer shadow-lg ${
-                                        isAllReady
-                                        ? "bg-red-500 text-white shadow-red-200 hover:bg-red-600"
-                                        : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                                    }`}
+                                {ownerUser === memberName && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleRandomizeFood}
+                                        disabled={!isAllReady}
+                                        className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer shadow-lg ${
+                                            isAllReady
+                                                ? "bg-red-500 text-white shadow-red-200 hover:bg-red-600"
+                                                : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+                                        }`}
                                     >
                                         🎲 สุ่มอาหาร
-                                </motion.button>
-                             )}
+                                    </motion.button>
+                                )}
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
@@ -355,7 +356,6 @@ export default function RoomLobbyPage({
                                         <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย 😅</p>
                                     )}
                                 </div>
-                                
                             </div>
                         </div>
                     </div>

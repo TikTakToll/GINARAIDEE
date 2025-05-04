@@ -4,8 +4,9 @@
 
 import React, { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import Navbar from "@/component/Navbar";
+import Navbar from "@/component/Navbar/Navbar";
 import './globals.css';
+import Providers from './Providers';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     }, [isHomePage]);
 
     return (
-        <html lang="EN">
+        <html lang="en" suppressHydrationWarning>
         <body style={{
             overscrollBehaviorX: "contain",
             overscrollBehaviorY: "contain",
@@ -33,12 +34,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             minHeight: "100vh",
             overflow: isHomePage ? 'hidden' : 'auto' // ป้องกันการ scroll เฉพาะหน้าหลัก
         }}>
-        <Navbar />
-        <div className={`pt-16 flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
-            <main className={`flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
-                {children}
-            </main>
-        </div>
+        <Providers>
+            <Navbar />
+            <div className={`pt-16 flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
+                <main className={`flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
+                    {children}
+                </main>
+            </div>
+        </Providers>
         </body>
         </html>
     );
