@@ -52,7 +52,7 @@ export default function RoomLobbyPage({
             try {
                 const data = await getRoomInfo(roomCode);
                 setMembers(data.members || []);
-                setSelectedMyFoods(data.memberFoodSelections?.[memberName] || []);
+                setSelectedMyFoods(data.memberFoodSelections?.["memberName"] || []);
                 setOwnerUser(data.ownerUser);
                 setReadyStatus(data.readyStatus || {});
                 setMemberFoodSelections(data.memberFoodSelections || {});
@@ -76,7 +76,7 @@ export default function RoomLobbyPage({
 
     const checkAllMembersReady = (membersList: string[], statusObj: Record<string, boolean>) => {
         if (!membersList || !statusObj || membersList.length === 0) return false;
-        const allReady = membersList.every((member) => statusObj[member] === true);
+        const allReady = membersList.every((member) => statusObj[member]);
         setAllMembersReady(allReady);
         return allReady;
     };
@@ -187,7 +187,7 @@ export default function RoomLobbyPage({
 
     return (
         <motion.div className="fixed inset-0 overflow-hidden bg-orange-50">
-            <div className="mt-60 h-full max-w-4xl mx-auto p-4 overflow-auto">
+            <div className="mt-50 h-full max-w-4xl mx-auto p-4 overflow-auto">
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
