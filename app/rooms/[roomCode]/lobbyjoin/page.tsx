@@ -45,19 +45,17 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
         const fetchRoomInfo = async () => {
             try {
                 const data = await getRoomInfo(roomCode);
-
-                setRoomState({
-                    isReady: memberName && data.readyStatus?.[memberName] || false,
-                    members: data.members || [],
-                    selectedMyFoods: data.memberFoodSelections?.["memberName"] || [],
-                    ownerUser: data.ownerUser,
-                    readyStatus: data.readyStatus || {},
-                    memberFoodSelections: data.memberFoodSelections || {},
-                    isLoading: false,
-                    allMembersReady: checkAllMembersReady(data.members, data.readyStatus),
-                });
-
-                setFoodOptions(generateMockFoodOptions());
+                setMembers(data.members || []);
+                setSelectedMyFoods(data.memberFoodSelections?.[memberName] || []);
+                setOwnerUser(data.ownerUser);
+                setReadyStatus(data.readyStatus || {});
+                setMemberFoodSelections(data.memberFoodSelections || {});
+                if (memberName && data.readyStatus?.[memberName] !== undefined) {
+                    setIsReady(data.readyStatus[memberName]);
+                }
+                const mockOptions = generateMockFoodOptions();
+                setFoodOptions(mockOptions);
+                checkAllMembersReady(data.members, data.readyStatus);
             } catch (err) {
                 console.error("Failed to fetch room info:", err);
                 setRoomState(prev => ({ ...prev, isLoading: false }));
@@ -71,7 +69,9 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     const checkAllMembersReady = (membersList: string[], statusObj: Record<string, boolean>) => {
         if (!membersList || !statusObj || membersList.length === 0) return false;
-        return membersList.every((member) => statusObj[member]);
+        const allReady = membersList.every((member) => statusObj[member] === true);
+        setAllMembersReady(allReady);
+        return allReady;
     };
 
     const generateMockFoodOptions = () => {
