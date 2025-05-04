@@ -175,17 +175,7 @@ export default function CreateRoomPage() {
     };
 
     return (
-        <div
-            className="fixed inset-0 flex items-center justify-center"
-            style={{
-                // backgroundImage: `url("https://i.pinimg.com/1200x/13/75/0d/13750d8970141cab1ab2a703d950fb75.jpg")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: '#FFEBCD',
-                overflow: 'hidden'
-            }}
-        >
+        <div className="fixed inset-0 flex items-center justify-center bg-orange-100">
 
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
                 <h1 className="text-2xl font-bold mb-6 text-center">สร้างห้องใหม่</h1>

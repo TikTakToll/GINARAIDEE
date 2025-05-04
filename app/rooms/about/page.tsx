@@ -1,4 +1,3 @@
-//แก้ไขให้มีการซ่อน Nav เวลาเลื่อน
 'use client';
 
 import { useEffect } from 'react';
@@ -42,11 +41,12 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Mission Section */}
             <section className="flex-grow py-16 px-6">
                 <div className="max-w-4xl mx-auto space-y-16">
                     {/* Mission Card 1 */}
-                    <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-up">
+                    <div
+                        className="bg-white rounded-3xl shadow-xl p-10 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+                    >
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">ภารกิจของเรา</h2>
                         <p className="text-md text-orange-700 leading-7">
                             เรามุ่งเน้นการสร้างประสบการณ์ที่เรียบง่าย สนุก และเชื่อถือได้
@@ -55,7 +55,9 @@ export default function AboutPage() {
                     </div>
 
                     {/* Mission Card 2 */}
-                    <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-right">
+                    <div
+                        className="bg-white rounded-3xl shadow-xl p-10 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+                    >
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">ทำไมต้อง GINARAIDEE?</h2>
                         <ul className="list-disc pl-6 text-orange-700 space-y-3">
                             <li>ระบบสุ่มที่แฟร์และน่าเชื่อถือ</li>
@@ -65,7 +67,9 @@ export default function AboutPage() {
                     </div>
 
                     {/* Mission Card 3 */}
-                    <div className="bg-white rounded-3xl shadow-xl p-10" data-aos="fade-left">
+                    <div
+                        className="bg-white rounded-3xl shadow-xl p-10 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+                    >
                         <h2 className="text-3xl font-semibold text-orange-800 mb-4">เป้าหมายในอนาคต</h2>
                         <p className="text-md text-orange-700 leading-7">
                             เรากำลังวางแผนที่จะเพิ่มฟีเจอร์ใหม่ เช่น ระบบรีวิวร้าน, โปรโมชั่นพิเศษ และการเชื่อมต่อกับแผนที่ร้านอาหารรอบตัวคุณ
@@ -73,6 +77,7 @@ export default function AboutPage() {
                     </div>
                 </div>
             </section>
+
 
             {/* 🖼 ทีมของเรา Section: Hover Card */}
             <section className="py-16 bg-orange-200" data-aos="fade-up">
