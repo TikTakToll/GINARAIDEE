@@ -36,6 +36,7 @@ export default function RoomLobbyPage({
         [foodOptions, setFoodOptions] = useState<any[]>([]),
         [allMembersReady, setAllMembersReady] = useState(false),
         [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
+    //เหลือเชื่อมต่อกับ hooks เพื่อดึงฟังก์ชัน
 
     useWebSocket(roomCode, {
         setMembers,
