@@ -121,3 +121,4 @@ export default function Navbar() {
 //npm install framer-motion เพิ่มเติม
 //npm install react-icons
 //npm install aos
+//npm install next-themes

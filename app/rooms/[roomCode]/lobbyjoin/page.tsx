@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, use } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
     getRoomInfo,
     kickMember,
@@ -12,66 +13,73 @@ import {
 } from "@/services/roomService";
 import { motion } from "framer-motion";
 
-export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: string }> }) {
-    // Extract params and setup hooks
+export default function RoomLobbyPage({
+                                          params,
+                                      }: {
+    params: Promise<{ roomCode: string }>;
+}) {
     const { roomCode } = use(params);
     const router = useRouter();
-    const memberName = useSearchParams().get("memberName");
+    const searchParams = useSearchParams();
+    const memberName = searchParams.get("memberName");
 
-    // Group related state together
-    const [roomState, setRoomState] = useState({
-        isReady: false,
-        members: [] as string[],
-        selectedMyFoods: [] as string[],
-        ownerUser: "",
-        readyStatus: {} as Record<string, boolean>,
-        memberFoodSelections: {} as Record<string, string[]>,
-        isLoading: true,
-        allMembersReady: false,
-    });
+    const [isReady, setIsReady] = useState(false),
+        [members, setMembers] = useState<string[]>([]),
+        [selectedMyFoods, setSelectedMyFoods] = useState<string[]>([]),
+        [ownerUser, setOwnerUser] = useState<string>(""),
+        [readyStatus, setReadyStatus] = useState<Record<string, boolean>>({}),
+        [memberFoodSelections, setMemberFoodSelections] = useState<Record<string, string[]>>({}),
+        [isLoading, setIsLoading] = useState(true),
+        [foodOptions, setFoodOptions] = useState<any[]>([]),
+        [allMembersReady, setAllMembersReady] = useState(false),
+        [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
 
-    const [foodOptions, setFoodOptions] = useState<any[]>([]);
-    const [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
-
-    // Computed values
-    const isAllReady = roomState.members.every((member) => roomState.readyStatus[member]);
+    const isAllReady = members.every((member) => readyStatus[member]);
 
     const DEFAULT_FOOD_TYPES = [
-        "ของหวาน", "อาหารตามสั่ง", "อาหารจานเดียว", "ก๋วยเตี๋ยว",
-        "เครื่องดื่ม/น้ำผลไม้", "เบเกอรี/เค้ก", "ชาบู", "อาหารเกาหลี", "ปิ้งย่าง",
+        "ของหวาน",
+        "อาหารตามสั่ง",
+        "อาหารจานเดียว",
+        "ก๋วยเตี๋ยว",
+        "เครื่องดื่ม/น้ำผลไม้",
+        "เบเกอรี/เค้ก",
+        "ชาบู",
+        "อาหารเกาหลี",
+        "ปิ้งย่าง",
     ];
 
     useEffect(() => {
         const fetchRoomInfo = async () => {
             try {
                 const data = await getRoomInfo(roomCode);
-
-                setRoomState({
-                    isReady: memberName && data.readyStatus?.[memberName] || false,
-                    members: data.members || [],
-                    selectedMyFoods: data.memberFoodSelections?.["memberName"] || [],
-                    ownerUser: data.ownerUser,
-                    readyStatus: data.readyStatus || {},
-                    memberFoodSelections: data.memberFoodSelections || {},
-                    isLoading: false,
-                    allMembersReady: checkAllMembersReady(data.members, data.readyStatus),
-                });
-
-                setFoodOptions(generateMockFoodOptions());
+                setMembers(data.members || []);
+                setSelectedMyFoods(data.memberFoodSelections?.["memberName"] || []);
+                setOwnerUser(data.ownerUser);
+                setReadyStatus(data.readyStatus || {});
+                setMemberFoodSelections(data.memberFoodSelections || {});
+                if (memberName && data.readyStatus?.[memberName] !== undefined) {
+                    setIsReady(data.readyStatus[memberName]);
+                }
+                const mockOptions = generateMockFoodOptions();
+                setFoodOptions(mockOptions);
+                checkAllMembersReady(data.members, data.readyStatus);
             } catch (err) {
                 console.error("Failed to fetch room info:", err);
-                setRoomState(prev => ({ ...prev, isLoading: false }));
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchRoomInfo();
         const intervalId = setInterval(fetchRoomInfo, 500000);
         return () => clearInterval(intervalId);
-    }, [roomCode, memberName]);
+    }, [roomCode]);
 
     const checkAllMembersReady = (membersList: string[], statusObj: Record<string, boolean>) => {
         if (!membersList || !statusObj || membersList.length === 0) return false;
-        return membersList.every((member) => statusObj[member]);
+        const allReady = membersList.every((member) => statusObj[member]);
+        setAllMembersReady(allReady);
+        return allReady;
     };
 
     const generateMockFoodOptions = () => {
@@ -100,10 +108,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
         try {
             await kickMember(roomCode, memberName!, member);
             alert(`เตะ ${member} ออกจากห้องเรียบร้อย`);
-            setRoomState(prev => ({
-                ...prev,
-                members: prev.members.filter(m => m !== member)
-            }));
+            setMembers((prev) => prev.filter((m) => m !== member));
         } catch (err: any) {
             alert("เตะสมาชิกไม่สำเร็จ: " + err.message);
         }
@@ -128,18 +133,12 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                 return;
             }
 
-            // อัปเดตเฉพาะของตัวเอง
-            setRoomState(prev => ({
-                ...prev,
-                selectedMyFoods: response.selectedFoods
-            }));
+            // ✅ อัปเดตเฉพาะของตัวเอง
+            setSelectedMyFoods(response.selectedFoods);
 
-            // โหลดข้อมูลห้องใหม่เพื่อให้ได้ของสมาชิกคนอื่นด้วย
+            // ✅ โหลดข้อมูลห้องใหม่เพื่อให้ได้ของสมาชิกคนอื่นด้วย
             const updatedRoom = await getRoomInfo(roomCode);
-            setRoomState(prev => ({
-                ...prev,
-                memberFoodSelections: updatedRoom.memberFoodSelections || {}
-            }));
+            setMemberFoodSelections(updatedRoom.memberFoodSelections || {});
         } catch (err: any) {
             alert("เลือกประเภทอาหารไม่สำเร็จ: " + (err?.response?.data || err.message));
         }
@@ -147,36 +146,28 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     const handleReadyToggle = async () => {
         try {
-            const newReadyStatus = !roomState.isReady;
+            const newReadyStatus = !isReady;
             await setMemberReady(roomCode, memberName!, newReadyStatus);
-
-            setRoomState(prev => ({
-                ...prev,
-                isReady: newReadyStatus,
-                readyStatus: { ...prev.readyStatus, [memberName!]: newReadyStatus },
-                selectedMyFoods: newReadyStatus ? prev.selectedMyFoods : []
-            }));
+            setIsReady(newReadyStatus);
+            setReadyStatus((prev) => ({ ...prev, [memberName!]: newReadyStatus }));
+            if (!newReadyStatus) setSelectedMyFoods([]);
         } catch (err: any) {
             alert("ตั้งค่าสถานะไม่สำเร็จ: " + err.message);
         }
     };
 
+
     const handleRandomizeFood = async () => {
         try {
-            const result = await randomizeFood(roomCode, memberName!);
-            if (result.error) {
-                alert(result.error);
-                return;
-            }
-            setRandomResult(result);
+            router.push(`/rooms/${roomCode}/randomizer?memberName=${memberName}`);
         } catch (err: any) {
             alert("สุ่มอาหารไม่สำเร็จ: " + (err?.response?.data || err.message));
         }
     };
 
-    if (roomState.isLoading) {
+    if (isLoading) {
         return (
-            <div className="fixed inset-0 flex items-center justify-center ">
+            <div className="fixed inset-0 flex items-center justify-center bg-orange-50">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -189,8 +180,6 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
             </div>
         );
     }
-
-    const { members, ownerUser, readyStatus, memberFoodSelections, selectedMyFoods, isReady } = roomState;
 
     return (
         <motion.div className="min-h-screen overflow-y-auto">
@@ -268,7 +257,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                         disabled={!isAllReady}
                                         className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer shadow-lg ${
                                             isAllReady
-                                                ? "bg-red-500 text-white shadow-red-200 hover:bg-red-600"
+                                                ? "bg-red-500 text-white hover:bg-red-600"
                                                 : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                                         }`}
                                     >
@@ -281,7 +270,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                     onClick={handleReadyToggle}
                                     className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer ${
                                         isReady
-                                            ? "bg-green-500 text-white shadow-lg shadow-green-200"
+                                            ? "bg-green-500 text-white shadow-lg "
                                             : "bg-yellow-400 text-black hover:bg-yellow-500 shadow-lg"
                                     }`}
                                 >
@@ -303,60 +292,60 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                         <div className="space-y-4">
                             <h2 className="font-semibold text-lg text-orange-500">เลือกประเภทอาหารที่คุณอยากกิน</h2>
 
-                                <div className="flex flex-wrap gap-2 mb-4 border-2 rounded-lg p-3">
-                                    {DEFAULT_FOOD_TYPES.map((type, idx) => (
-                                        <motion.button
-                                            key={idx}
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => handleSelectFood(type)}
-                                            className={`px-3 py-1.5 rounded-full cursor-pointer ${
-                                                selectedMyFoods.includes(type)
-                                                    ? "bg-orange-500 text-white shadow-md"
-                                                    : "bg-white border border-orange-200 hover:border-orange-400 shadow-sm"
-                                            } text-black transition-all text-sm`}
-                                        >
-                                            {type}
-                                        </motion.button>
-                                    ))}
-                                </div>
-                                <div className="mt-4 bg-white rounded-lg p-3">
-                                    <h3 className="text-sm font-semibold mb-2 text-gray-700">
-                                        รายการอาหารที่สมาชิกเลือกไว้ (เฉพาะคนที่กดพร้อม)
-                                    </h3>
-                                    {members.filter((m) => readyStatus[m]).length > 0 ? (
-                                        members.map((member) => {
-                                            if (!readyStatus[member]) return null;
-                                            const foods = memberFoodSelections[member] || [];
-                                            return (
-                                                <div key={member}>
-                                                    <p className="text-sm font-medium text-orange-600">
-                                                        🍽️ {member}
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                                                        {foods.length > 0 ? (
-                                                            foods.map((food, idx) => (
-                                                                <motion.span
-                                                                    key={idx}
-                                                                    initial={{ opacity: 0, scale: 0.8 }}
-                                                                    animate={{ opacity: 1, scale: 1 }}
-                                                                    transition={{ delay: idx * 0.1 }}
-                                                                    className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs"
-                                                                >
-                                                                    {food}
-                                                                </motion.span>
-                                                            ))
-                                                        ) : (
-                                                            <p className="text-xs text-gray-400">ยังไม่เลือกประเภทอาหาร</p>
-                                                        )}
-                                                    </div>
+                            <div className="flex flex-wrap gap-2 mb-4 border-2 rounded-lg p-3">
+                                {DEFAULT_FOOD_TYPES.map((type, idx) => (
+                                    <motion.button
+                                        key={idx}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleSelectFood(type)}
+                                        className={`px-3 py-1.5 rounded-full cursor-pointer ${
+                                            selectedMyFoods.includes(type)
+                                                ? "bg-orange-500 text-white shadow-md"
+                                                : "bg-white border border-orange-200 hover:border-orange-400 shadow-sm"
+                                        } text-black transition-all text-sm`}
+                                    >
+                                        {type}
+                                    </motion.button>
+                                ))}
+                            </div>
+                            <div className="mt-4 bg-white rounded-lg p-3">
+                                <h3 className="text-sm font-semibold mb-2 text-gray-700">
+                                    รายการอาหารที่สมาชิกเลือกไว้ (เฉพาะคนที่กดพร้อม)
+                                </h3>
+                                {members.filter((m) => readyStatus[m]).length > 0 ? (
+                                    members.map((member) => {
+                                        if (!readyStatus[member]) return null;
+                                        const foods = memberFoodSelections[member] || [];
+                                        return (
+                                            <div key={member}>
+                                                <p className="text-sm font-medium text-orange-600">
+                                                    🍽️ {member}
+                                                </p>
+                                                <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                                                    {foods.length > 0 ? (
+                                                        foods.map((food, idx) => (
+                                                            <motion.span
+                                                                key={idx}
+                                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                transition={{ delay: idx * 0.1 }}
+                                                                className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs"
+                                                            >
+                                                                {food}
+                                                            </motion.span>
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-xs text-gray-400">ยังไม่เลือกประเภทอาหาร</p>
+                                                    )}
                                                 </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย 😅</p>
-                                    )}
-                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย 😅</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </motion.div>
