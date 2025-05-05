@@ -1,8 +1,9 @@
-//แก้ไข React Hydration Mismatch คิอการที่ HTML ที่ฝั่ง Server Rendered (SSR) กับ HTML ที่ Client สร้างขึ้นไม่ตรงกันระหว่างโหลดครั้งแรก
 // app/layout.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+
+import { ThemeProvider as CustomThemeProvider } from '@/component/theme/ThemeContext';
+import { ThemeProvider as NextThemeProvider } from 'next-themes';
 import { usePathname } from 'next/navigation';
 import Navbar from "@/component/Navbar";
 import './globals.css';
@@ -11,37 +12,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const pathname = usePathname();
     const isHomePage = pathname === '/';
 
-    useEffect(() => {
-        if (isHomePage) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-
-        return () => {
-            document.body.style.overflow = 'auto';
-        };
-    }, [isHomePage]);
-
     return (
-        <html lang="EN">
-        <body style={{
-            overscrollBehaviorX: "contain",
-            overscrollBehaviorY: "contain",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            overflow: isHomePage ? 'hidden' : 'auto' // ป้องกันการ scroll เฉพาะหน้าหลัก
-        }}>
-        <Navbar />
-        <div className={`pt-16 flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
-            <main className={`flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
-                {children}
-            </main>
-        </div>
+        <html lang="th" suppressHydrationWarning>
+        <body
+            className={`flex flex-col min-h-screen overscroll-contain text-[rgb(var(--foreground-rgb))] transition-colors duration-300 ease-in-out ${isHomePage ? 'overflow-hidden' : 'overflow-auto'}`}
+        >
+        <NextThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <CustomThemeProvider>
+                <Navbar />
+                <div className={`pt-16 flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
+                    <main className={`flex-grow flex flex-col ${isHomePage ? 'overflow-hidden' : ''}`}>
+                        {children}
+                    </main>
+                </div>
+            </CustomThemeProvider>
+        </NextThemeProvider>
         </body>
         </html>
     );
 }
-
-

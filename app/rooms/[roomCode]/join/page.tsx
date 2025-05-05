@@ -41,10 +41,10 @@ export default function JoinRoomPage() {
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-orange-100">
-            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
+        <div className="fixed inset-0 flex items-center justify-center ">
+            <div className="w-full max-w-md p-6 border-2 rounded-lg shadow-xl">
                 <h1 className="text-2xl font-bold mb-6 text-center">เข้าร่วมห้อง</h1>
-                <h2 className="text-center text-gray-600 mb-6">ใส่รหัสห้องเพื่อเข้าร่วม</h2>
+                <h2 className="text-center text-gray-500 mb-6">ใส่รหัสห้องเพื่อเข้าร่วม</h2>
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -54,7 +54,7 @@ export default function JoinRoomPage() {
 
                 <form onSubmit={handleJoinRoom}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 mb-2" htmlFor="roomCode">
+                        <label className="block text-gray-500 mb-2" htmlFor="roomCode">
                             รหัสห้อง
                         </label>
                         <input
@@ -70,7 +70,7 @@ export default function JoinRoomPage() {
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-gray-700 mb-2" htmlFor="memberName">
+                        <label className="block text-gray-500 mb-2" htmlFor="memberName">
                             ชื่อของคุณ
                         </label>
                         <input
