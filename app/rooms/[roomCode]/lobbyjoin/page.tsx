@@ -176,7 +176,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
 
     if (roomState.isLoading) {
         return (
-            <div className="fixed inset-0 flex items-center justify-center bg-orange-50">
+            <div className="fixed inset-0 flex items-center justify-center ">
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -193,23 +193,23 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
     const { members, ownerUser, readyStatus, memberFoodSelections, selectedMyFoods, isReady } = roomState;
 
     return (
-        <motion.div className="fixed inset-0 overflow-hidden bg-orange-50">
-            <div className="mt-50 h-full max-w-4xl mx-auto p-4 overflow-auto">
+        <motion.div className="min-h-screen overflow-y-auto">
+            <div className="mt-30 max-w-4xl mx-auto p-4">
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6 }}
-                    className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                    className="border-2 rounded-2xl shadow-xl overflow-hidden"
                 >
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-orange-400 to-yellow-400 p-6 text-white flex justify-between items-center">
+                    <div className="bg-gradient-to-r from-red-400 to-yellow-400 p-6 text-black flex justify-between items-center shadow-2xl">
                         <div>
                             <h1 className="text-3xl font-bold">ห้อง: {roomCode}</h1>
                             <p className="opacity-90">
                                 ยินดีต้อนรับ <span className="font-semibold">{memberName}</span>!
                             </p>
                         </div>
-                        <p className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                        <p className="text-sm  bg-yellow-500 border-2 px-3 py-1 rounded-full">
                             สมาชิก {members.length} คน
                         </p>
                     </div>
@@ -219,7 +219,8 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                         {/* Left: Members */}
                         <div className="space-y-4">
                             <h2 className="font-semibold text-lg text-orange-500">สมาชิกในห้อง</h2>
-                            <div className="bg-orange-50 rounded-xl p-4">
+                            <div className=" rounded-xl p-4 border-2">
+                                {/*ส่วนของสมาชิกฝั่งซ้าย*/}
                                 {members.map((member, index) => (
                                     <motion.div
                                         key={index}
@@ -235,10 +236,10 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                         <div className="flex items-center">
                                             <span
                                                 className={`w-2 h-2 rounded-full mr-2 ${
-                                                    readyStatus[member] ? "bg-green-500" : "bg-gray-400"
+                                                    readyStatus[member] ? "bg-green-500" : "bg-red-400"
                                                 }`}
                                             ></span>
-                                            <span className="font-medium">{member}</span>
+                                            <span className="font-medium text-black">{member}</span>
                                             {member === ownerUser && (
                                                 <span className="ml-2 text-xs bg-yellow-500 text-white px-2 py-0.5 rounded">
                                                     เจ้าของห้อง
@@ -248,7 +249,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                         {memberName === ownerUser && member !== ownerUser && (
                                             <button
                                                 onClick={() => handleKick(member)}
-                                                className="text-red-500 hover:text-red-700 text-sm flex items-center"
+                                                className="text-red-500 hover:text-red-700 text-sm flex items-center cursor-pointer"
                                             >
                                                 เตะ
                                             </button>
@@ -281,7 +282,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                     className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer ${
                                         isReady
                                             ? "bg-green-500 text-white shadow-lg shadow-green-200"
-                                            : "bg-yellow-400 text-black hover:bg-yellow-500 shadow-lg shadow-yellow-200"
+                                            : "bg-yellow-400 text-black hover:bg-yellow-500 shadow-lg"
                                     }`}
                                 >
                                     {isReady ? "✅ พร้อมแล้ว!" : "⚪ ยังไม่พร้อม"}
@@ -291,7 +292,7 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={handleLeaveRoom}
-                                    className="py-3 w-full bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-all"
+                                    className="py-3 w-full bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-all cursor-pointer"
                                 >
                                     🚪 ออกจากห้อง
                                 </motion.button>
@@ -301,19 +302,19 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                         {/* Right: Food Selection */}
                         <div className="space-y-4">
                             <h2 className="font-semibold text-lg text-orange-500">เลือกประเภทอาหารที่คุณอยากกิน</h2>
-                            <div className="bg-orange-50 rounded-xl p-4">
-                                <div className="flex flex-wrap gap-2 mb-4">
+
+                                <div className="flex flex-wrap gap-2 mb-4 border-2 rounded-lg p-3">
                                     {DEFAULT_FOOD_TYPES.map((type, idx) => (
                                         <motion.button
                                             key={idx}
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => handleSelectFood(type)}
-                                            className={`px-3 py-1.5 rounded-full ${
+                                            className={`px-3 py-1.5 rounded-full cursor-pointer ${
                                                 selectedMyFoods.includes(type)
                                                     ? "bg-orange-500 text-white shadow-md"
                                                     : "bg-white border border-orange-200 hover:border-orange-400 shadow-sm"
-                                            } transition-all text-sm`}
+                                            } text-black transition-all text-sm`}
                                         >
                                             {type}
                                         </motion.button>
@@ -356,7 +357,6 @@ export default function RoomLobbyPage({ params }: { params: Promise<{ roomCode: 
                                         <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย 😅</p>
                                     )}
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </motion.div>
