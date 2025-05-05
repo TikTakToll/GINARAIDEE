@@ -5,7 +5,7 @@
 import { ThemeProvider as CustomThemeProvider } from '@/component/theme/ThemeContext';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 import { usePathname } from 'next/navigation';
-import Navbar from "@/component/Navbar";
+import Navbar from "@/component/Navbar/Navbar";
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
