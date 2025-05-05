@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import useWebSocket from "@/hooks/useWebSocket"; // ปรับ path ตามของจริง
 import {
     getRoomInfo,
     kickMember,
@@ -22,6 +23,8 @@ export default function RoomLobbyPage({
     const router = useRouter();
     const searchParams = useSearchParams();
     const memberName = searchParams.get("memberName");
+    // ✅ WebSocket: รับข้อมูลจาก server แบบเรียลไทม์
+
 
     const [isReady, setIsReady] = useState(false),
         [members, setMembers] = useState<string[]>([]),
@@ -33,6 +36,16 @@ export default function RoomLobbyPage({
         [foodOptions, setFoodOptions] = useState<any[]>([]),
         [allMembersReady, setAllMembersReady] = useState(false),
         [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
+
+    useWebSocket(roomCode, {
+        setMembers,
+        setReadyStatus,
+        setMemberFoodSelections,
+        onRoomDeleted: () => {
+            alert("ห้องนี้ถูกลบแล้ว");
+            router.push("/");
+        },
+    });
 
     const isAllReady = members.every((member) => readyStatus[member]);
 
@@ -48,12 +61,13 @@ export default function RoomLobbyPage({
         "ปิ้งย่าง",
     ];
 
+
     useEffect(() => {
         const fetchRoomInfo = async () => {
             try {
                 const data = await getRoomInfo(roomCode);
                 setMembers(data.members || []);
-                setSelectedMyFoods(data.memberFoodSelections?.["memberName"] || []);
+                setSelectedMyFoods(data.memberFoodSelections?.[memberName!] || []);
                 setOwnerUser(data.ownerUser);
                 setReadyStatus(data.readyStatus || {});
                 setMemberFoodSelections(data.memberFoodSelections || {});
@@ -70,9 +84,9 @@ export default function RoomLobbyPage({
             }
         };
 
-        fetchRoomInfo();
-        const intervalId = setInterval(fetchRoomInfo, 500000);
-        return () => clearInterval(intervalId);
+        fetchRoomInfo(); // เรียกครั้งแรกเท่านั้น
+
+        // ❌ ไม่ต้อง setInterval แล้ว
     }, [roomCode]);
 
     const checkAllMembersReady = (membersList: string[], statusObj: Record<string, boolean>) => {

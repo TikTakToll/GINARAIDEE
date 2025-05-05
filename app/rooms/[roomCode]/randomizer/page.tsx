@@ -237,7 +237,7 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
 
     return (
         // ปรับปรุงหน้าเว็บให้มีพื้นที่เหมาะสม ไม่บัง Navbar
-        <div className="pt-20 max-w-4xl mx-auto">
+        <div className="pt-20 pb-12 max-w-4xl mx-auto">
             {/* การ์ดหลัก */}
             <div className="bg-gradient-to-b from-orange-50 to-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden">
                 {/* ส่วนหัว */}
@@ -253,7 +253,7 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                 </div>
 
                 {/* เนื้อหาหลัก */}
-                <div className="p-5">
+                <div className="p-5 md:p-8">
                     <div className="text-center mb-6">
                         <h2 className="font-medium text-xl text-gray-700">สุ่มตัดสินใจว่าวันนี้จะกินอะไรดี</h2>
                     </div>
