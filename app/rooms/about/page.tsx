@@ -34,7 +34,7 @@ export default function AboutPage() {
             {/* Hero Section */}
             <section className="flex items-center justify-center text-center py-20 px-6  " data-aos="fade-down">
                 <div>
-                    <h1 className="text-5xl font-bold text-orange-500 mb-4">เกี่ยวกับ GINARAIDEE</h1>
+                    <h1 className="text-5xl font-bold text-orange-500 mb-4">GINARAIDEE</h1>
                     <p className="text-lg text-orange-400 max-w-2xl mx-auto">
                         ที่ที่คุณจะไม่ต้องปวดหัวกับคำถามว่า "จะกินอะไรดี?" อีกต่อไป
                     </p>
@@ -76,15 +76,27 @@ export default function AboutPage() {
 
 
             {/* 🖼 ทีมของเรา Section: Hover Card */}
-            <section className="py-16 " data-aos="fade-up">
+            <section className="py-16" data-aos="fade-up">
                 <div className="max-w-6xl mx-auto px-6">
                     <h2 className="text-4xl font-bold text-orange-400 mb-12 text-center">สมาชิกในกลุ่ม</h2>
                     <div className="grid md:grid-cols-3 gap-10">
                         {/* Card Example */}
                         {[
-                            { img: "/Bomb.jpg", name: "Bomb", description: "ผู้เชี่ยวชาญด้านการเลือกเมนูอาหาร" },
-                            { img: "/Plub.jpg", name: "Plub", description: "นักพัฒนาระบบสุ่มที่แม่นยำ" },
-                            { img: "/Kao.jpg", name: "Kao", description: "นักออกแบบประสบการณ์ผู้ใช้สุดสร้างสรรค์" },
+                            {
+                                img: "/Bomb.jpg",
+                                name: "Bomb",
+                                description: "นักพัฒนาและแก้ไขบัค\n"
+                            },
+                            {
+                                img: "/Plub.jpg",
+                                name: "Plub",
+                                description: "นักพัฒนาระบบหน้าบ้าน\nดูแลส่วน UX/UI"
+                            },
+                            {
+                                img: "/Kao.jpg",
+                                name: "Kao",
+                                description: "นักออกแบบและปรับปรุงฐานข้อมูล\nดูแลประสิทธิภาพระบบ"
+                            },
                         ].map((member, idx) => (
                             <div key={idx} className="card">
                                 <Image
@@ -95,7 +107,7 @@ export default function AboutPage() {
                                 />
                                 <div className="card__content">
                                     <h3 className="card__title">{member.name}</h3>
-                                    <p className="card__description">
+                                    <p className="card__description whitespace-pre-line">
                                         {member.description}
                                     </p>
                                 </div>
@@ -108,7 +120,7 @@ export default function AboutPage() {
 
             {/* Footer */}
             <footer className=" text-orange-500 text-center py-6 mt-auto" >
-                <p className="text-sm">&copy; 2025 GINARAIDEE. All rights reserved.</p>
+                <p className="text-sm">&copy; 2025 GINARAIDEE. เลือกร้านอาหารง่ายๆ กับเพื่อน</p>
             </footer>
         </div>
     );

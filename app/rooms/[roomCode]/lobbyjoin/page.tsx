@@ -13,6 +13,8 @@ import {
     randomizeFood,
 } from "@/services/roomService";
 import { motion } from "framer-motion";
+import { Button } from "@/component/ui/Button";
+import {TbBowlSpoon} from "react-icons/tb";
 
 export default function RoomLobbyPage({
                                           params,
@@ -36,16 +38,31 @@ export default function RoomLobbyPage({
         [foodOptions, setFoodOptions] = useState<any[]>([]),
         [allMembersReady, setAllMembersReady] = useState(false),
         [randomResult, setRandomResult] = useState<{ randomFood: string; restaurants: any[] } | null>(null);
-    //เหลือเชื่อมต่อกับ hooks เพื่อดึงฟังก์ชัน
 
     useWebSocket(roomCode, {
-        setMembers,
+        setMembers: (updatedMembers) => {
+            setMembers(updatedMembers);
+
+            // ✅ ถ้าเราโดนเตะตัวเองออก → redirect ไปหน้าแรก
+            if (!updatedMembers.includes(memberName!)) {
+                alert("คุณถูกเตะออกจากห้องแล้ว");
+                router.push("/");
+            }
+
+            // ✅ ถ้าเจ้าของห้องเปลี่ยน
+            if (!updatedMembers.includes(ownerUser)) {
+                setOwnerUser(updatedMembers[0]); // ตั้งเจ้าของใหม่ ถ้าคุณต้องการแสดงหัวหน้าแบบ real-time
+            }
+        },
         setReadyStatus,
         setMemberFoodSelections,
         onRoomDeleted: () => {
             alert("ห้องนี้ถูกลบแล้ว");
             router.push("/");
         },
+        onRandomStarted: () => {
+            router.push(`/rooms/${roomCode}/randomizer?memberName=${memberName}`);
+        }
     });
 
     const isAllReady = members.every((member) => readyStatus[member]);
@@ -151,9 +168,6 @@ export default function RoomLobbyPage({
             // ✅ อัปเดตเฉพาะของตัวเอง
             setSelectedMyFoods(response.selectedFoods);
 
-            // ✅ โหลดข้อมูลห้องใหม่เพื่อให้ได้ของสมาชิกคนอื่นด้วย
-            const updatedRoom = await getRoomInfo(roomCode);
-            setMemberFoodSelections(updatedRoom.memberFoodSelections || {});
         } catch (err: any) {
             alert("เลือกประเภทอาหารไม่สำเร็จ: " + (err?.response?.data || err.message));
         }
@@ -208,8 +222,11 @@ export default function RoomLobbyPage({
                     {/* Header */}
                     <div className="bg-gradient-to-r from-red-400 to-yellow-400 p-6 text-black flex justify-between items-center shadow-2xl">
                         <div>
-                            <h1 className="text-3xl font-bold">ห้อง: {roomCode}</h1>
-                            <p className="opacity-90">
+                            <div className="bg-black/20 backdrop-blur-sm rounded-xl px-2 py-2 inline-flex items-center shadow-sm">
+                                <span className="text-2xl text-white font-medium">ห้อง :</span>
+                                <span className="text-2xl ml-2 bg-white px-3 py-1 rounded-lg shadow-sm text-orange-600 font-bold">{roomCode}</span>
+                            </div>
+                            <p className="mt-5 opacity-90">
                                 ยินดีต้อนรับ <span className="font-semibold">{memberName}</span>!
                             </p>
                         </div>
@@ -265,41 +282,25 @@ export default function RoomLobbyPage({
                             {/* Ready & Leave */}
                             <div className="flex flex-col gap-3 mt-6">
                                 {ownerUser === memberName && (
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
+                                    <Button
                                         onClick={handleRandomizeFood}
                                         disabled={!isAllReady}
-                                        className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer shadow-lg ${
-                                            isAllReady
-                                                ? "bg-red-500 text-white hover:bg-red-600"
-                                                : "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                                        }`}
                                     >
-                                        🎲 สุ่มอาหาร
-                                    </motion.button>
+                                         สุ่มอาหาร
+                                    </Button>
                                 )}
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                <Button
                                     onClick={handleReadyToggle}
-                                    className={`py-3 w-full rounded-xl font-medium transition-all cursor-pointer ${
-                                        isReady
-                                            ? "bg-green-500 text-white shadow-lg "
-                                            : "bg-yellow-400 text-black hover:bg-yellow-500 shadow-lg"
-                                    }`}
                                 >
-                                    {isReady ? "✅ พร้อมแล้ว!" : "⚪ ยังไม่พร้อม"}
-                                </motion.button>
+                                    {isReady ? "พร้อมแล้ว!" : "ยังไม่พร้อม"}
+                                </Button>
 
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                <Button
                                     onClick={handleLeaveRoom}
-                                    className="py-3 w-full bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-all cursor-pointer"
+                                    className="cursor-pointer"
                                 >
-                                    🚪 ออกจากห้อง
-                                </motion.button>
+                                    ออกจากห้อง
+                                </Button>
                             </div>
                         </div>
 
@@ -335,7 +336,7 @@ export default function RoomLobbyPage({
                                         return (
                                             <div key={member}>
                                                 <p className="text-sm font-medium text-orange-600">
-                                                    🍽️ {member}
+                                                    <TbBowlSpoon className="text-xl text-orange-400"/>{member}
                                                 </p>
                                                 <div className="flex flex-wrap gap-1 mt-1 mb-2">
                                                     {foods.length > 0 ? (
@@ -358,7 +359,7 @@ export default function RoomLobbyPage({
                                         );
                                     })
                                 ) : (
-                                    <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย 😅</p>
+                                    <p className="text-gray-500 text-sm">ยังไม่มีสมาชิกคนไหนกดพร้อมเลย</p>
                                 )}
                             </div>
                         </div>
@@ -366,9 +367,9 @@ export default function RoomLobbyPage({
                 </motion.div>
 
                 {/* Footer */}
-                <div className="mt-4 text-center text-gray-500 text-sm">
-                    © 2025 WhatEat - เลือกร้านอาหารง่ายๆ กับเพื่อน
-                </div>
+                <footer className=" text-orange-500 text-center py-6 mt-auto" >
+                    <p className="text-sm">&copy; 2025 GINARAIDEE. เลือกร้านอาหารง่ายๆ กับเพื่อน</p>
+                </footer>
             </div>
         </motion.div>
     );
