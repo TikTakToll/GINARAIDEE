@@ -45,10 +45,10 @@ export default function AboutPage() {
                 <div className="max-w-4xl mx-auto space-y-16">
                     {/* Mission Card 1 */}
                     <div className="border-2 rounded-3xl shadow-xl p-10 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
-                        <h2 className="text-3xl font-semibold text-orange-500 mb-4">ภารกิจของเรา</h2>
+                        <h2 className="text-3xl font-semibold text-orange-500 mb-4">เป้าหมายของเรา</h2>
                         <p className="text-md text-orange-400 leading-7">
-                            เรามุ่งเน้นการสร้างประสบการณ์ที่เรียบง่าย สนุก และเชื่อถือได้
-                            เพื่อช่วยให้คุณและเพื่อนๆ เลือกอาหารได้แบบไม่มีดราม่า
+                            เรามุ่งเน้นการสร้างประสบการณ์ที่เรียบง่าย สนุกสนาน และทำให้ได้ใช้เวลาร่วมกันกับเพื่อนๆ
+                            เพื่อช่วยให้คุณและเพื่อนๆ เลือกร้านอาหารได้อย่างเป็นธรรมที่สุด
                         </p>
                     </div>
 
@@ -56,7 +56,7 @@ export default function AboutPage() {
                     <div className="border-2 rounded-3xl shadow-xl p-10 transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
                         <h2 className="text-3xl font-semibold text-orange-500 mb-4">ทำไมต้อง GINARAIDEE?</h2>
                         <ul className="list-disc pl-6 text-orange-400 space-y-3">
-                            <li>ระบบสุ่มที่แฟร์และน่าเชื่อถือ</li>
+                            <li>ระบบสุ่มที่แฟร์และสะดวกสะบายในการใช้งาน</li>
                             <li>เลือกประเภทอาหารได้ตามใจ</li>
                             <li>เหมาะกับการชวนเพื่อน-ครอบครัวมาโหวตสนุกๆ</li>
                         </ul>
@@ -68,7 +68,7 @@ export default function AboutPage() {
                     >
                         <h2 className="text-3xl font-semibold text-orange-500 mb-4">เป้าหมายในอนาคต</h2>
                         <p className="text-md text-orange-400 leading-7">
-                            เรากำลังวางแผนที่จะเพิ่มฟีเจอร์ใหม่ เช่น ระบบรีวิวร้าน, โปรโมชั่นพิเศษ และการเชื่อมต่อกับแผนที่ร้านอาหารรอบตัวคุณ
+                            เรากำลังวางแผนที่จะเพิ่มฟีเจอร์ใหม่ เช่น ระบบรีวิวร้านและการเชื่อมต่อกับแผนที่ร้านอาหารรอบตัวคุณ ทำให้เว็บไซด์มีความเสถียรขึ้น
                         </p>
                     </div>
                 </div>

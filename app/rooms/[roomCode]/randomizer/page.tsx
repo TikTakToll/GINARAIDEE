@@ -4,8 +4,9 @@ import { useEffect, useState, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { getRoomInfo, randomizeFood, leaveRoom } from '@/services/roomService';
-import Image from 'next/image';
-import {motion} from "framer-motion";
+import useWebSocket from '@/hooks/useWebSocket';
+import { motion } from "framer-motion";
+import {Button} from "@/component/ui/Button";
 
 export default function RandomizePage({ params }: { params: Promise<{ roomCode: string }> }) {
     const { roomCode } = use(params);
@@ -46,6 +47,19 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
     const [glowIntensity, setGlowIntensity] = useState(0),
         [setShowConfetti] = useState(false);
 
+    useWebSocket(roomCode, {
+        onRandomStarted: () => {
+            setIsRandomizing(true);
+            setAnimationActive(true);
+            setRandomizationComplete(false);
+            setDisplayedFoods([]);
+            setRandomFoodResult(null);
+            setGlowIntensity(0);
+        },
+        onRandomResult: (food, restaurantList) => {
+            startSpinAnimation(food, restaurantList); // ✅ ใช้ฟังก์ชันเดียวกับ owner
+        },
+    });
     useEffect(() => {
         const fetchRoomInfo = async () => {
             try {
@@ -82,6 +96,78 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
     // ตรวจสอบว่าผู้ใช้ปัจจุบันเป็นเจ้าของห้องหรือไม่
     const isOwner = memberName === ownerUser;
 
+
+
+    const startSpinAnimation = (finalFood: string, finalRestaurants: any[]) => {
+        const foodPool = [...DEFAULT_FOOD_TYPES];
+        const spinLength = 120;
+        const centerIndex = 15;
+        const finalSequence: any[] = [];
+
+        for (let i = 0; i < spinLength; i++) {
+            finalSequence.push(foodPool[Math.floor(Math.random() * foodPool.length)]);
+        }
+
+        finalSequence[finalSequence.length - 1 - centerIndex] = finalFood;
+
+        let index = 0;
+
+        const phase1Speed = 40, phase1Length = 50;
+        const phase2Speed = 60, phase2Length = 40;
+        const phase3Speed = 100, phase3Length = 30;
+
+        setAnimationActive(true);
+        setGlowIntensity(0);
+        setSpinEffect(0);
+        setAnimationPhase(1);
+
+        // เฟส 1 - เร็ว
+        const phase1Interval = setInterval(() => {
+            setDisplayedFoods(finalSequence.slice(index, index + 30));
+            setSpinEffect(Math.random() * 3 - 1.5);
+            index++;
+
+            if (index >= phase1Length) {
+                clearInterval(phase1Interval);
+                setAnimationPhase(2);
+
+                // เฟส 2 - ช้าลง
+                const phase2Interval = setInterval(() => {
+                    setDisplayedFoods(finalSequence.slice(index, index + 30));
+                    setSpinEffect(Math.random() * 2 - 1);
+                    index++;
+
+                    if (index >= phase1Length + phase2Length) {
+                        clearInterval(phase2Interval);
+                        setAnimationPhase(3);
+
+                        // เฟส 3 - ช้ามาก และค่อยๆ หยุด
+                        const phase3Interval = setInterval(() => {
+                            setDisplayedFoods(finalSequence.slice(index, index + 30));
+                            setSpinEffect(Math.random() - 0.5);
+                            index++;
+
+                            if (index >= phase1Length + phase2Length + phase3Length - 10) {
+                                setGlowIntensity((index - (phase1Length + phase2Length + phase3Length - 10)) * 0.1);
+                            }
+
+                            if (index + 30 > finalSequence.length) {
+                                clearInterval(phase3Interval);
+                                setAnimationActive(false);
+                                setRandomizationComplete(true);
+                                setIsRandomizing(false);
+                                setGlowIntensity(1);
+                                setSpinEffect(0);
+                                setRandomFoodResult(finalFood);
+                                setRestaurants(finalRestaurants);
+                            }
+                        }, phase3Speed);
+                    }
+                }, phase2Speed);
+            }
+        }, phase1Speed);
+    };
+
     // ฟังก์ชันสำหรับการเริ่มการสุ่มอาหาร
     const startRandomize = async () => {
         try {
@@ -95,152 +181,21 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
             setSpinEffect(0);
             setGlowIntensity(0);
 
-            // เรียก API เพื่อหาผลลัพธ์ล่วงหน้า
+            // 🔥 บอก backend ให้เริ่มสุ่ม (broadcast ให้ทุกคนรู้ว่าเริ่มแล้ว)
+            await fetch(`/api/rooms/${roomCode}/start-random`, { method: 'POST' });
+
+            // ดึงผลลัพธ์ล่วงหน้า (สำหรับ owner)
             const response = await randomizeFood(roomCode, ownerUser);
 
             if (!response || !response.randomFood) {
                 throw new Error("ไม่พบผลการสุ่มอาหาร");
             }
 
-            setRandomFoodResult(response.randomFood);
-            if (response.restaurants && Array.isArray(response.restaurants)) {
-                setRestaurants(response.restaurants);
-            } else {
-                setRestaurants([]);
-            }
+            const finalFood = response.randomFood;
+            const finalRestaurants = Array.isArray(response.restaurants) ? response.restaurants : [];
 
-            // ฟังก์ชันเพื่อตรวจสอบว่าเลขคี่หรือเลขคู่
-            const isOdd = (num: number): boolean => num % 2 === 1;
-
-            const finalFood = response.randomFood,
-                foodPool = [...DEFAULT_FOOD_TYPES],
-                spinLength = 150, // เพิ่มความยาวของการสุ่มให้มากขึ้น
-                visibleItems = 31, // จำนวนรายการที่แสดงต่อครั้ง (ควรเป็นเลขคี่เพื่อให้มีตรงกลาง)
-                centerIndex = Math.floor(visibleItems / 2), // ตำแหน่งตรงกลาง
-                finalSequence: string[] = [];
-
-            // ตรวจสอบให้แน่ใจว่า visibleItems เป็นเลขคี่เพื่อให้มีตำแหน่งตรงกลางที่ชัดเจน
-            if (!isOdd(visibleItems)) {
-                console.warn("Warning: visibleItems should be odd to have a clear center position");
-            }
-
-            // สร้างลำดับการสุ่มที่จะแสดงในแต่ละเฟส
-            for (let i = 0; i < spinLength; i++) {
-                finalSequence.push(foodPool[Math.floor(Math.random() * foodPool.length)]);
-            }
-
-            // แสดงการสุ่มแบบ smooth โดยแบ่งเป็น 4 เฟส
-            let index = 0;
-
-            // กำหนดค่าความเร็วและความยาวของแต่ละเฟส
-            const phase1Speed = 30, // ms - เริ่มเร็ว
-                phase1Length = 60,
-                phase2Speed = 50, // ms - ปานกลาง
-                phase2Length = 50,
-                phase3Speed = 90, // ms - ช้าลง
-                phase3Length = 30,
-                phase4Speed = 200, // ms - ช้า
-                phase4Length = 10;
-
-            // สร้างฟังก์ชันสำหรับแสดงผลและอัพเดทสถานะ
-            const updateDisplay = (currentIndex: number): void => {
-                // คำนวณให้แสดงผลรายการโดยมีตำแหน่งกลางเป็นจุดอ้างอิง
-                const startIdx: number = currentIndex;
-                const displayedItems: string[] = finalSequence.slice(startIdx, startIdx + visibleItems);
-
-                // ถ้ารายการไม่พอให้เติมด้วยรายการสุ่ม
-                while (displayedItems.length < visibleItems) {
-                    displayedItems.push(foodPool[Math.floor(Math.random() * foodPool.length)]);
-                }
-
-                setDisplayedFoods(displayedItems);
-            };
-
-            // เริ่มเฟส 1 - เร็วมาก
-            setAnimationPhase(1);
-            const phase1Interval = setInterval(() => {
-                updateDisplay(index);
-                index++;
-
-                // เพิ่มเอฟเฟกต์สั่นมาก
-                setSpinEffect(Math.random() * 4 - 2);
-
-                if (index >= phase1Length) {
-                    clearInterval(phase1Interval);
-                    setAnimationPhase(2);
-
-                    // เริ่มเฟส 2 - ช้าลงเล็กน้อย
-                    const phase2Interval = setInterval(() => {
-                        updateDisplay(index);
-                        index++;
-
-                        // เพิ่มเอฟเฟกต์สั่นปานกลาง
-                        setSpinEffect(Math.random() * 2.5 - 1.25);
-
-                        if (index >= phase1Length + phase2Length) {
-                            clearInterval(phase2Interval);
-                            setAnimationPhase(3);
-
-                            // เริ่มเฟส 3 - ช้าลงมาก
-                            const phase3Interval = setInterval(() => {
-                                updateDisplay(index);
-                                index++;
-
-                                // ลดเอฟเฟกต์สั่น
-                                setSpinEffect(Math.random() * 1.5 - 0.75);
-
-                                // เริ่มเพิ่มความเข้มของแสงเล็กน้อย
-                                const phaseProgress = (index - (phase1Length + phase2Length)) / phase3Length;
-                                setGlowIntensity(phaseProgress * 0.3); // เริ่มเพิ่มแสงเล็กน้อย
-
-                                if (index >= phase1Length + phase2Length + phase3Length) {
-                                    clearInterval(phase3Interval);
-                                    setAnimationPhase(4);
-
-                                    // เริ่มเฟส 4 - ช้ามากๆ และค่อยๆ หยุด
-                                    const phase4Interval = setInterval(() => {
-                                        updateDisplay(index);
-                                        index++;
-
-                                        // ลดเอฟเฟกต์สั่นเหลือน้อยมาก
-                                        setSpinEffect(Math.random() * 0.8 - 0.4);
-
-                                        // เพิ่มความเข้มของแสงมากขึ้นเรื่อยๆ จนสว่างเต็มที่
-                                        const finalPhaseProgress = (index - (phase1Length + phase2Length + phase3Length)) / phase4Length;
-                                        setGlowIntensity(0.3 + (finalPhaseProgress * 0.7)); // เพิ่มจาก 0.3 ถึง 1.0
-
-                                        // ตรวจสอบว่าจบการสุ่มแล้วหรือไม่
-                                        if (index >= phase1Length + phase2Length + phase3Length + phase4Length) {
-                                            clearInterval(phase4Interval);
-
-                                            // สร้างชุดข้อมูลสุดท้ายที่มีผลลัพธ์อยู่ตรงกลางพอดี
-                                            const finalItems: string[] = [];
-
-                                            // สร้างรายการที่มีผลลัพธ์อยู่ตรงกลางพอดี
-                                            for (let i = 0; i < visibleItems; i++) {
-                                                if (i === centerIndex) {
-                                                    finalItems.push(finalFood); // ใส่ผลลัพธ์ตรงกลาง
-                                                } else {
-                                                    finalItems.push(foodPool[Math.floor(Math.random() * foodPool.length)]);
-                                                }
-                                            }
-
-                                            // แสดงผลชุดข้อมูลสุดท้าย
-                                            setDisplayedFoods(finalItems);
-
-                                            setAnimationActive(false);
-                                            setRandomizationComplete(true);
-                                            setIsRandomizing(false);
-                                            setGlowIntensity(1);
-                                            setSpinEffect(0); // รีเซ็ตเอฟเฟกต์สั่น
-                                        }
-                                    }, phase4Speed);
-                                }
-                            }, phase3Speed);
-                        }
-                    }, phase2Speed);
-                }
-            }, phase1Speed);
+            // 👇 เรียกฟังก์ชันหมุนที่แยกไว้
+            startSpinAnimation(finalFood, finalRestaurants);
         } catch (err: any) {
             console.error("Error during randomization:", err);
             setRandomizingError(err?.message || "เกิดข้อผิดพลาดในการสุ่มอาหาร");
@@ -320,7 +275,7 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                             {/* เนื้อหาหลัก */}
                             <div className="p-5 md:p-8">
                                 <div className="text-center mb-6">
-                                    <h2 className="font-medium text-xl text-gray-700">สุ่มตัดสินใจว่าวันนี้จะกินอะไรดี</h2>
+                                    <h2 className="font-medium text-xl">สุ่มตัดสินใจว่าวันนี้จะกินอะไรดี</h2>
                                 </div>
 
                                 {/* ส่วนการสุ่ม */}
@@ -517,7 +472,7 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                                             <div className="mt-4">
                                                 <button
                                                     onClick={() => setShowAllRestaurants(!showAllRestaurants)}
-                                                    className="flex items-center justify-center mx-auto bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-full mb-3 transition-all  shadow-sm"
+                                                    className="flex items-center justify-center mx-auto bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-full mb-3 transition-all shadow-sm"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="mr-1" viewBox="0 0 16 16">
                                                         {showAllRestaurants ?
@@ -539,8 +494,8 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                                                                 <div className="flex justify-between items-center">
                                                                     <h4 className="font-medium text-gray-800">{restaurant.name || `ร้านอาหาร ${idx + 2}`}</h4>
                                                                     <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full">
-                            {selectedRestaurant === idx + 1 ? "▲ ซ่อนรูป" : "▼ ดูรูป"}
-                          </span>
+                                                                        {selectedRestaurant === idx + 1 ? "▲ ซ่อนรูป" : "▼ ดูรูป"}
+                                                                    </span>
                                                                 </div>
 
                                                                 {selectedRestaurant === idx + 1 && (
@@ -566,13 +521,40 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                                                                                 </div>
                                                                             </div>
                                                                         )}
-                                                                        <div className="flex items-center mt-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="mr-1 text-gray-500" viewBox="0 0 16 16">
-                                                                                <path d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022zM6 8.694 1 10.36V15h5V8.694zM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15z"/>
-                                                                                <path d="M2 11h1v1H2v-1zm2 0h1v1H4v-1zm-2 2h1v1H2v-1zm2 0h1v1H4v-1zm4-4h1v1H8V9zm2 0h1v1h-1V9zm-2 2h1v1H8v-1zm2 0h1v1h-1v-1zm2-2h1v1h-1V9zm0 2h1v1h-1v-1zM8 7h1v1H8V7zm2 0h1v1h-1V7zm2 0h1v1h-1V7zM8 5h1v1H8V5zm2 0h1v1h-1V5zm2 0h1v1h-1V5zm0-2h1v1h-1V3z"/>
-                                                                            </svg>
-                                                                            <span className="font-medium text-sm">ประเภท:</span>
-                                                                            <span className="ml-1 text-gray-600 text-sm">{restaurant.types || "ไม่ระบุประเภท"}</span>
+                                                                        <div className="flex flex-col space-y-2 mt-2">
+                                                                            <div className="flex items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="mr-1 text-gray-500" viewBox="0 0 16 16">
+                                                                                    <path d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022zM6 8.694 1 10.36V15h5V8.694zM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15z"/>
+                                                                                    <path d="M2 11h1v1H2v-1zm2 0h1v1H4v-1zm-2 2h1v1H2v-1zm2 0h1v1H4v-1zm4-4h1v1H8V9zm2 0h1v1h-1V9zm-2 2h1v1H8v-1zm2 0h1v1h-1v-1zm2-2h1v1h-1V9zm0 2h1v1h-1v-1zM8 7h1v1H8V7zm2 0h1v1h-1V7zm2 0h1v1h-1V7zM8 5h1v1H8V5zm2 0h1v1h-1V5zm2 0h1v1h-1V5zm0-2h1v1h-1V3z"/>
+                                                                                </svg>
+                                                                                <span className="font-medium text-sm">ประเภท:</span>
+                                                                                <span className="ml-1 text-gray-600 text-sm">{restaurant.types || "ไม่ระบุประเภท"}</span>
+                                                                            </div>
+
+                                                                            {/* แสดงพิกัด */}
+                                                                            <div className="flex items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="mr-1 text-gray-500" viewBox="0 0 16 16">
+                                                                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                                                                </svg>
+                                                                                <span className="font-medium text-sm">พิกัด:</span>
+                                                                                <span className="ml-1 text-gray-600 text-sm">{restaurant.location || "ไม่ระบุพิกัด"}</span>
+                                                                            </div>
+
+                                                                            {/* ลิงก์ไปยังหน้าร้านอาหาร */}
+                                                                            <a
+                                                                                href={restaurant.placeUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}`}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors mt-1"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation(); // ป้องกันการเรียก toggleRestaurantSelection
+                                                                                }}
+                                                                            >
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="mr-2" viewBox="0 0 16 16">
+                                                                                    <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5z"/>
+                                                                                </svg>
+                                                                                ดูหน้าร้านใน Google Maps
+                                                                            </a>
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -584,29 +566,19 @@ export default function RandomizePage({ params }: { params: Promise<{ roomCode: 
                                         )}
                                     </div>
                                 )}
+
                             </div>
 
                             {/*แก้ไขปุ่มเพิ่มระยะห่างของปุ่มและ card*/}
-                            <div className="flex space-x-3 mt-6 px-4 mb-6">
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={backToLobby}
-                                    className="py-3 w-full bg-yellow-400 text-gray-700 rounded-xl font-medium hover:bg-yellow-500 transition-all cursor-pointer"
-                                >
+                            <div className="flex flex-row justify-between mt-5 mb-5">
+                                <Button onClick={backToLobby} className="cursor-pointer w-1/2 mr-2">
                                     กลับไปห้องรอ
-                                </motion.button>
-
-                                {/*แก้ไขปุ่มเพิ่มระยะห่างของปุ่มและ card*/}
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleLeaveRoom}
-                                    className="py-3 w-full bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-all cursor-pointer"
-                                >
-                                    🚪 ออกจากห้อง
-                                </motion.button>
+                                </Button>
+                                <Button onClick={handleLeaveRoom} className="cursor-pointer w-1/2 ml-2">
+                                    ออกจากห้อง
+                                </Button>
                             </div>
+
                         </div>
                     </div>
                 </motion.div>

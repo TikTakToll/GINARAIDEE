@@ -22,7 +22,8 @@ export default function useWebSocket(
         setReadyStatus,
         setMemberFoodSelections,
         onRoomDeleted,
-        onRandomStarted
+        onRandomStarted,
+        onRandomResult
     } = callbacks;
     const stompClientRef = useRef<Client | null>(null);
 
@@ -74,7 +75,9 @@ export default function useWebSocket(
                 client.subscribe(`/topic/room/${roomCode}/random-result`, (message) => {
                     const { food, restaurants } = JSON.parse(message.body);
                     console.log("ผลการสุ่ม:", food, restaurants);
-                    callbacks.onRandomResult?.(food, restaurants);
+
+                    // ✅ แทนที่จะแสดงผลลัพธ์ทันที → ให้เริ่ม animation แทน
+                    onRandomResult?.(food, restaurants);
                 });
             },
         });

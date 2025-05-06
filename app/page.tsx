@@ -10,7 +10,7 @@ export default function Home() {
             <main className="flex-grow py-6 px-4 flex items-center justify-center">
                 <div className="w-full max-w-md">
                     {/* แทน Card ด้วย div ที่มี styling คล้ายกัน */}
-                    <div className="w-full p-8 shadow-xl border-2 bg-opacity-90 backdrop-blur-sm rounded-2xl">
+                    <div className="mt-5 w-full p-8 shadow-xl border-2 bg-opacity-90 backdrop-blur-sm rounded-2xl">
                         <div className="text-center mb-6">
                             <div className="inline-block p-2 border-2  rounded-full shadow-lg mb-4">
                                 <TbBowlSpoon className="text-6xl text-orange-400" />

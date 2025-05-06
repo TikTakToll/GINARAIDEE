@@ -13,8 +13,8 @@ import {
     randomizeFood,
 } from "@/services/roomService";
 import { motion } from "framer-motion";
-import { Button } from "@/component/ui/Button";
-import {TbBowlSpoon} from "react-icons/tb";
+import {Button} from "@/component/ui/Button";
+import { TbBowlSpoon } from "react-icons/tb";
 
 export default function RoomLobbyPage({
                                           params,
@@ -212,7 +212,7 @@ export default function RoomLobbyPage({
 
     return (
         <motion.div className="min-h-screen overflow-y-auto">
-            <div className="mt-30 max-w-4xl mx-auto p-4">
+            <div className="mt-20 max-w-4xl mx-auto p-4">
                 <motion.div
                     initial={{ y: -50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
